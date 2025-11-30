@@ -1,9 +1,14 @@
 package setixx.software
 
 import io.ktor.server.application.*
+import io.ktor.server.netty.EngineMain
+import setixx.software.config.configureDatabases
+import setixx.software.config.configureMonitoring
+import setixx.software.config.configureSecurity
+import setixx.software.config.configureSerialization
 
 fun main(args: Array<String>) {
-    io.ktor.server.netty.EngineMain.main(args)
+    EngineMain.main(args)
 }
 
 fun Application.module() {
