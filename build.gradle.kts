@@ -4,6 +4,7 @@ val logback_version: String by project
 val postgres_version: String by project
 val flyway_version: String by project
 val hikari_version: String by project
+val koin_version: String by project
 
 plugins {
     kotlin("jvm") version "2.2.20"
@@ -42,4 +43,5 @@ dependencies {
     implementation("org.flywaydb:flyway-core:$flyway_version")
     implementation("org.flywaydb:flyway-database-postgresql:$flyway_version")
     implementation("com.zaxxer:HikariCP:$hikari_version")
+    implementation("io.insert-koin:koin-ktor:${koin_version}")
 }
