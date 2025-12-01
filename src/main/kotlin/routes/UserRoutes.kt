@@ -11,6 +11,8 @@ import org.koin.ktor.ext.inject
 import setixx.software.data.dto.RegisterResponse
 import setixx.software.data.dto.UpdatePasswordRequest
 import setixx.software.data.dto.UpdatePasswordResponse
+import setixx.software.data.dto.UpdateUserInfoRequest
+import setixx.software.data.dto.UpdateUserInfoResponse
 import setixx.software.services.UserService
 
 fun Route.userRoutes() {
@@ -37,6 +39,30 @@ fun Route.userRoutes() {
         } catch (e: Exception) {
             call.respond(HttpStatusCode.Conflict, "User registration failed " +
                     "${e.message}")
+            e.printStackTrace()
+        }
+    }
+
+    post("/update-user"){
+        val request = try {
+            call.receive<UpdateUserInfoRequest>()
+        } catch (e: Exception) {
+            call.respond(HttpStatusCode.BadRequest, "Invalid request body")
+            return@post
+        }
+
+        try {
+            val principal = call.principal<JWTPrincipal>()
+            val email = principal!!.payload.getClaim("email").asString()
+            val userUpdate = userService.updateUserInfo(email, request)
+            call.respond(
+                HttpStatusCode.OK,
+                UpdateUserInfoResponse("User updated successfully")
+            )
+        } catch (e: IllegalArgumentException) {
+            call.respond(HttpStatusCode.BadRequest, "Invalid request body")
+        } catch (e: Exception) {
+            call.respond(HttpStatusCode.Conflict, "User update failed")
             e.printStackTrace()
         }
     }

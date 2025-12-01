@@ -13,9 +13,10 @@ fun Application.configureDatabases() {
 }
 
 fun Application.connectToPostgres(): DataSource {
-    Class.forName("org.postgresql.Driver")
+    val driver = environment.config.propertyOrNull("postgres.driver")?.getString() ?: "org.postgresql.Driver"
+
     val config = HikariConfig().apply {
-        driverClassName = "org.postgresql.Driver"
+        driverClassName = driver
         jdbcUrl = environment.config.property("postgres.url").getString()
         username = environment.config.property("postgres.user").getString()
         password = environment.config.property("postgres.password").getString()

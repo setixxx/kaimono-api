@@ -57,11 +57,30 @@ class UserRepository {
     }
 
     suspend fun updatePassword(
-        email: String,
+        id: Long,
         passwordHash: String,
     ) = dbQuery {
-        Users.update({ Users.email eq email }) {
+        Users.update({ Users.id eq id }) {
             it[Users.passwordHash] = passwordHash
+        }
+    }
+
+    suspend fun updateUser(
+        id: Long,
+        name: String,
+        surname: String,
+        phone: String,
+        email: String,
+        birthday: LocalDate?,
+        gender: String,
+    ) = dbQuery {
+        Users.update({ Users.id eq id }) {
+            if (!name.isBlank()) it[Users.name] = name
+            if (!surname.isBlank()) it[Users.surname] = surname
+            if (!phone.isBlank()) it[Users.phone] = phone
+            if (!email.isBlank()) it[Users.email] = email
+            if (birthday != null) it[Users.birthday] = birthday
+            if (!gender.isBlank()) it[Users.gender] = gender
         }
     }
 

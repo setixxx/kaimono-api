@@ -1,0 +1,1 @@
+ALTER TABLE users ADD CONSTRAINT chk_users_phone_not_empty CHECK (length(phone) > 0);

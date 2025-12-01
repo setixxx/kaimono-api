@@ -44,4 +44,5 @@ dependencies {
     implementation("org.flywaydb:flyway-database-postgresql:$flyway_version")
     implementation("com.zaxxer:HikariCP:$hikari_version")
     implementation("io.insert-koin:koin-ktor:${koin_version}")
+    testImplementation("io.ktor:ktor-client-content-negotiation")
 }
