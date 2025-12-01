@@ -12,7 +12,8 @@ import java.util.*
 
 class JwtService(
     private val application: Application,
-    private val userRepository: UserRepository,
+    private val userService: UserService,
+    private val userRepository: UserRepository
 ) {
 
     private val secret = getConfigProperty("jwt.secret")
@@ -30,7 +31,7 @@ class JwtService(
             .build()
 
     suspend fun createJwtToken(loginUserRequest: LoginUserRequest): String? {
-        val foundUser: User? = userRepository.findByEmail(loginUserRequest.email)
+        val foundUser: User = userService.login(loginUserRequest)
 
         return JWT.create()
             .withAudience(audience)

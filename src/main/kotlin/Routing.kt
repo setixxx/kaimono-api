@@ -15,7 +15,7 @@ fun Application.configureRouting() {
             call.respondText("Hello World!")
         }
 
-        route("/register") {
+        route("/auth") {
             authRoutes()
         }
     }

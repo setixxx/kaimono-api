@@ -16,7 +16,7 @@ fun Route.authRoutes() {
     val userService by inject<UserService>()
     val jwtService by inject<JwtService>()
 
-    route("/auth") {
+    route("") {
         post("/register") {
             val request = try {
                 call.receive<RegisterUserRequest>()
@@ -49,9 +49,7 @@ fun Route.authRoutes() {
             }
 
             try {
-                val user = call.receive<LoginUserRequest>()
-
-                val token: String? = jwtService.createJwtToken(user)
+                val token: String? = jwtService.createJwtToken(request)
 
                 token?.let {
                     call.respond(hashMapOf("token" to token))
