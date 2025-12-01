@@ -3,7 +3,9 @@ package setixx.software.services
 import setixx.software.data.dto.LoginResponse
 import setixx.software.data.dto.LoginUserRequest
 import setixx.software.data.dto.RegisterUserRequest
-import setixx.software.data.repositories.user.UserRepository
+import setixx.software.data.dto.UpdatePasswordRequest
+import setixx.software.data.dto.UpdatePasswordResponse
+import setixx.software.data.repositories.UserRepository
 import setixx.software.models.User
 import setixx.software.utils.hashString
 import java.security.MessageDigest
@@ -45,8 +47,8 @@ class UserService(
     }
 
     suspend fun login(request: LoginUserRequest): User {
-        val user = userRepository.findByEmail(request.email) ?:
-        throw IllegalArgumentException("User email doesn't exist")
+        val user = userRepository.findByEmail(request.email)
+            ?: throw IllegalArgumentException("User email doesn't exist")
 
         val passwordHash = hashString(request.password)
 
@@ -56,5 +58,18 @@ class UserService(
             throw IllegalArgumentException("User password doesn't match")
     }
 
+    suspend fun updatePassword(
+        email: String,
+        request: UpdatePasswordRequest,
+    ) {
+        val user = userRepository.findByEmail(email)
+            ?: throw IllegalArgumentException("User email doesn't exist")
+        val oldPasswordHash = hashString(request.oldPassword)
+        if (user.passwordHash != oldPasswordHash) {
+            throw IllegalArgumentException("User password doesn't match")
+        } else {
+            userRepository.updatePassword(email, request.newPassword)
+        }
+    }
 
 }

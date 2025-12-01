@@ -1,8 +1,10 @@
-package setixx.software.data.repositories.user
+package setixx.software.data.repositories
 
 import org.jetbrains.exposed.sql.ResultRow
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.selectAll
+import org.jetbrains.exposed.sql.update
 import setixx.software.data.tables.Users
 import setixx.software.models.User
 import setixx.software.utils.dbQuery
@@ -52,6 +54,15 @@ class UserRepository {
             .where { Users.email eq email }
             .map { rowToUser(it) }
             .singleOrNull()
+    }
+
+    suspend fun updatePassword(
+        email: String,
+        passwordHash: String,
+    ) = dbQuery {
+        Users.update({ Users.email eq email }) {
+            it[Users.passwordHash] = passwordHash
+        }
     }
 
     private fun rowToUser(row: ResultRow): User {

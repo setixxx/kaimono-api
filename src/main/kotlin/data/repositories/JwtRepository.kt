@@ -1,4 +1,4 @@
-package setixx.software.data.repositories.jwt
+package setixx.software.data.repositories
 
 import org.jetbrains.exposed.sql.ResultRow
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
@@ -10,7 +10,6 @@ import setixx.software.models.Token
 import setixx.software.utils.dbQuery
 import setixx.software.utils.hashString
 import java.time.Instant
-import java.time.LocalDateTime
 
 class JwtRepository {
     suspend fun saveToken(

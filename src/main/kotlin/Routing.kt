@@ -7,8 +7,9 @@ import io.ktor.server.auth.principal
 import io.ktor.server.http.content.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import setixx.software.data.repositories.user.UserRepository
+import setixx.software.data.repositories.UserRepository
 import setixx.software.routes.authRoutes
+import setixx.software.routes.userRoutes
 
 fun Application.configureRouting() {
     routing {
@@ -17,6 +18,10 @@ fun Application.configureRouting() {
         }
 
         authenticate {
+            route("/user") {
+                userRoutes()
+            }
+
             get("/") {
                 val principal = call.principal<JWTPrincipal>()
                 val email = principal?.payload?.getClaim("email")?.asString()

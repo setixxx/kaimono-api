@@ -2,8 +2,8 @@ package setixx.software.di
 
 import io.ktor.server.application.Application
 import org.koin.dsl.module
-import setixx.software.data.repositories.jwt.JwtRepository
-import setixx.software.data.repositories.user.UserRepository
+import setixx.software.data.repositories.JwtRepository
+import setixx.software.data.repositories.UserRepository
 import setixx.software.services.JwtService
 import setixx.software.services.UserService
 

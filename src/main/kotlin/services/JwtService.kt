@@ -7,8 +7,8 @@ import io.ktor.server.application.*
 import io.ktor.server.auth.jwt.*
 import setixx.software.data.dto.LoginResponse
 import setixx.software.data.dto.LoginUserRequest
-import setixx.software.data.repositories.jwt.JwtRepository
-import setixx.software.data.repositories.user.UserRepository
+import setixx.software.data.repositories.JwtRepository
+import setixx.software.data.repositories.UserRepository
 import setixx.software.data.tables.Tokens.deviceInfo
 import setixx.software.models.Token
 import setixx.software.models.User
