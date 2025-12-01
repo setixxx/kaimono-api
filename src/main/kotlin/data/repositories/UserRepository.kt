@@ -1,5 +1,6 @@
 package setixx.software.data.repositories
 
+import org.jetbrains.exposed.sql.ResultRow
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.selectAll
@@ -44,6 +45,27 @@ class UserRepository {
             birthday = birthday,
             gender = finalGender,
             passwordHash = passwordHash
+        )
+    }
+
+    suspend fun findByEmail(email: String): User? = dbQuery {
+        Users.selectAll()
+            .where { Users.email eq email }
+            .map { rowToUser(it) }
+            .singleOrNull()
+    }
+
+    private fun rowToUser(row: ResultRow): User {
+        return User(
+            id = row[Users.id],
+            publicId = row[Users.publicId],
+            name = row[Users.name],
+            surname = row[Users.surname],
+            phone = row[Users.phone],
+            email = row[Users.email],
+            birthday = row[Users.birthday],
+            gender = row[Users.gender],
+            passwordHash = row[Users.passwordHash]
         )
     }
 }

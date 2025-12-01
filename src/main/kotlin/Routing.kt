@@ -15,7 +15,8 @@ fun Application.configureRouting() {
             call.respondText("Hello World!")
         }
 
-        authRoutes()
-        staticResources("/static", "static")
+        route("/register") {
+            authRoutes()
+        }
     }
 }

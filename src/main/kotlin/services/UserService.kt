@@ -1,5 +1,7 @@
 package setixx.software.services
 
+import setixx.software.data.dto.LoginResponse
+import setixx.software.data.dto.LoginUserRequest
 import setixx.software.data.dto.RegisterUserRequest
 import setixx.software.data.repositories.UserRepository
 import setixx.software.models.User
@@ -7,9 +9,15 @@ import java.security.MessageDigest
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
-class UserService(private val userRepository: UserRepository) {
+class UserService(
+    private val userRepository: UserRepository
+) {
 
     suspend fun register(request: RegisterUserRequest): User {
+        if (userRepository.findByEmail(request.email) != null) {
+            throw IllegalArgumentException("User email already exists")
+        }
+
         if (request.password.length < 6) {
             throw IllegalArgumentException("Password is too short")
         }
@@ -30,9 +38,31 @@ class UserService(private val userRepository: UserRepository) {
             phone = request.phone,
             email = request.email,
             birthday = birthdayDate,
-            gender = request.gender,
+            gender = "Male",
             passwordHash = passwordHash
         )
+    }
+
+    suspend fun login(request: LoginUserRequest): User {
+        val user = userRepository.findByEmail(request.email) ?:
+        throw IllegalArgumentException("User email doesn't exist")
+
+        val passwordHash = hashString(request.password)
+
+        if (user.passwordHash == passwordHash) {
+            return User(
+                id = user.id,
+                publicId = user.publicId,
+                name = user.name,
+                surname = user.surname,
+                phone = user.phone,
+                email = user.email,
+                birthday = user.birthday,
+                gender = user.gender,
+                passwordHash = passwordHash
+            )
+        } else
+            throw IllegalArgumentException("User password doesn't match")
     }
 
     private fun hashString(input: String): String {

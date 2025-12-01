@@ -2,6 +2,7 @@ package setixx.software.data.dto
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import java.util.UUID
 
 @Serializable
 data class RegisterUserRequest(
@@ -18,4 +19,15 @@ data class RegisterUserRequest(
 data class RegisterResponse(
     @SerialName("public_id")
     val publicId: String
+)
+
+@Serializable
+data class LoginUserRequest(
+    val email: String,
+    val password: String
+)
+
+@Serializable
+data class LoginResponse(
+    val uuid: String
 )
