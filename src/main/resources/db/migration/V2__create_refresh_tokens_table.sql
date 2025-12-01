@@ -3,7 +3,7 @@ CREATE TABLE IF NOT EXISTS refresh_tokens (
     user_id BIGINT NOT NULL,
     token_hash VARCHAR(255) NOT NULL,
     expires_at TIMESTAMPTZ NOT NULL,
-    created_at TIMESTAMP DEFAULT NOW(),
+    created_at TIMESTAMPTZ DEFAULT NOW(),
     device_info VARCHAR(255),
 
     CONSTRAINT fk_auth_tokens_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,

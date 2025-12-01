@@ -3,8 +3,9 @@ package setixx.software.services
 import setixx.software.data.dto.LoginResponse
 import setixx.software.data.dto.LoginUserRequest
 import setixx.software.data.dto.RegisterUserRequest
-import setixx.software.data.repositories.UserRepository
+import setixx.software.data.repositories.user.UserRepository
 import setixx.software.models.User
+import setixx.software.utils.hashString
 import java.security.MessageDigest
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -50,23 +51,10 @@ class UserService(
         val passwordHash = hashString(request.password)
 
         if (user.passwordHash == passwordHash) {
-            return User(
-                id = user.id,
-                publicId = user.publicId,
-                name = user.name,
-                surname = user.surname,
-                phone = user.phone,
-                email = user.email,
-                birthday = user.birthday,
-                gender = user.gender,
-                passwordHash = passwordHash
-            )
+            return user
         } else
             throw IllegalArgumentException("User password doesn't match")
     }
 
-    private fun hashString(input: String): String {
-        val bytes = MessageDigest.getInstance("SHA-256").digest(input.toByteArray())
-        return bytes.joinToString("") { "%02x".format(it) }
-    }
+
 }

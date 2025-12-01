@@ -29,5 +29,6 @@ data class LoginUserRequest(
 
 @Serializable
 data class LoginResponse(
-    val uuid: String
+    val refreshToken: String?,
+    val accessToken: String?,
 )

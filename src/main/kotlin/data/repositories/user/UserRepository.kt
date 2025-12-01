@@ -1,7 +1,6 @@
-package setixx.software.data.repositories
+package setixx.software.data.repositories.user
 
 import org.jetbrains.exposed.sql.ResultRow
-import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.selectAll
 import setixx.software.data.tables.Users
