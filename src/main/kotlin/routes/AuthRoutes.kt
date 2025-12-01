@@ -7,6 +7,7 @@ import io.ktor.server.routing.*
 import org.koin.ktor.ext.inject
 import setixx.software.data.dto.LoginResponse
 import setixx.software.data.dto.LoginUserRequest
+import setixx.software.data.dto.RefreshTokenRequest
 import setixx.software.data.dto.RegisterResponse
 import setixx.software.data.dto.RegisterUserRequest
 import setixx.software.services.JwtService
@@ -43,17 +44,17 @@ fun Route.authRoutes() {
         val request = try {
             call.receive<LoginUserRequest>()
         } catch (e: Exception) {
-            call.respond(HttpStatusCode.BadRequest, "Invalid request body")
+            call.respond(HttpStatusCode.BadRequest, "Invalid request body ${e.localizedMessage}")
             return@post
         }
 
         try {
             val deviceInfo = call.request.headers["User-Agent"] ?: "Unknown"
             val accessToken: String? = jwtService.createAccessToken(request)
-            val refreshToken: String? = jwtService.createRefreshToken(request, deviceInfo)
+            val refreshToken: String = jwtService.createRefreshToken(request, deviceInfo)
 
             accessToken?.let {
-                call.respond(LoginResponse(accessToken, refreshToken))
+                call.respond(LoginResponse(refreshToken, accessToken))
             } ?: call.respond(
                 message = HttpStatusCode.Unauthorized
             )
@@ -61,6 +62,47 @@ fun Route.authRoutes() {
             call.respond(HttpStatusCode.BadRequest, e.message ?: "Invalid data")
         } catch (e: Exception) {
             call.respond(HttpStatusCode.Conflict, "User login failed")
+            e.printStackTrace()
+        }
+    }
+
+    post("/refresh") {
+        val request = try {
+            call.receive<RefreshTokenRequest>()
+        } catch (e: Exception) {
+            call.respond(HttpStatusCode.BadRequest, "Invalid request body ${e.localizedMessage}")
+            return@post
+        }
+
+        try {
+            val deviceInfo = call.request.headers["User-Agent"] ?: "Unknown"
+            val response: LoginResponse = jwtService.reissueTokens(
+                refreshToken = request.refreshToken,
+                deviceInfo = deviceInfo
+            )
+
+            call.respond(response)
+        } catch (e: IllegalArgumentException) {
+            call.respond(HttpStatusCode.Unauthorized, e.message ?: "Invalid refresh token")
+        } catch (e: Exception) {
+            call.respond(HttpStatusCode.InternalServerError, "Token refresh failed")
+            e.printStackTrace()
+        }
+    }
+
+    post("/logout") {
+        val request = try {
+            call.receive<RefreshTokenRequest>()
+        } catch (e: Exception) {
+            call.respond(HttpStatusCode.BadRequest, "Invalid request body")
+            return@post
+        }
+
+        try {
+            jwtService.logout(request.refreshToken)
+            call.respond(HttpStatusCode.OK, "Logged out successfully")
+        } catch (e: Exception) {
+            call.respond(HttpStatusCode.InternalServerError, "Logout failed")
             e.printStackTrace()
         }
     }

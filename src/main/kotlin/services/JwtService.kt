@@ -5,10 +5,12 @@ import com.auth0.jwt.JWTVerifier
 import com.auth0.jwt.algorithms.Algorithm
 import io.ktor.server.application.*
 import io.ktor.server.auth.jwt.*
+import setixx.software.data.dto.LoginResponse
 import setixx.software.data.dto.LoginUserRequest
 import setixx.software.data.repositories.jwt.JwtRepository
 import setixx.software.data.repositories.user.UserRepository
 import setixx.software.data.tables.Tokens.deviceInfo
+import setixx.software.models.Token
 import setixx.software.models.User
 import java.time.Instant
 import java.util.*
@@ -35,15 +37,43 @@ class JwtService(
             .withIssuer(issuer)
             .build()
 
-    suspend fun createAccessToken(loginUserRequest: LoginUserRequest): String? {
-        val foundUser: User = userService.login(loginUserRequest)
-
+    private fun createAccessToken(email: String): String {
         return JWT.create()
             .withAudience(audience)
             .withIssuer(issuer)
-            .withClaim("email", loginUserRequest.email)
+            .withClaim("email", email)
             .withExpiresAt((Date(System.currentTimeMillis() + accessExpiration)))
             .sign(Algorithm.HMAC256(secret))
+    }
+
+    private suspend fun createRefreshTokenAndSave(
+        userId: Long,
+        email: String,
+        deviceInfo: String
+    ): String {
+        val now = Instant.now()
+        val expiresAt = Instant.ofEpochMilli(System.currentTimeMillis() + refreshExpiration)
+
+        val token = JWT.create()
+            .withAudience(audience)
+            .withIssuer(issuer)
+            .withClaim("email", email)
+            .withExpiresAt(Date.from(expiresAt))
+            .sign(Algorithm.HMAC256(secret))
+
+        jwtRepository.saveToken(
+            userId = userId,
+            token = token,
+            expiresAt = expiresAt,
+            createdAt = now,
+            deviceInfo = deviceInfo
+        )
+        return token
+    }
+
+    suspend fun createAccessToken(loginUserRequest: LoginUserRequest): String? {
+        val foundUser: User = userService.login(loginUserRequest)
+        return createAccessToken(foundUser.email)
     }
 
     suspend fun createRefreshToken(
@@ -51,24 +81,58 @@ class JwtService(
         deviceInfo: String
     ): String {
         val foundUser: User = userService.login(loginUserRequest)
-        val now = Instant.now()
-        val expiresAt = Instant.ofEpochMilli(System.currentTimeMillis() + refreshExpiration)
+        val foundToken: Token? = jwtRepository.findTokenByUser(foundUser.id)
+        foundToken?.let {
+            jwtRepository.deleteTokenByUser(foundUser.id)
+        }
+        return createRefreshTokenAndSave(foundUser.id, foundUser.email, deviceInfo)
+    }
 
-        val token = JWT.create()
+    suspend fun reissueTokens(
+        refreshToken: String,
+        deviceInfo: String
+    ): LoginResponse {
+        val jwtVerifierRefresh = JWT
+            .require(Algorithm.HMAC256(secret))
             .withAudience(audience)
             .withIssuer(issuer)
-            .withClaim("email", loginUserRequest.email)
-            .withExpiresAt(Date.from(expiresAt))
-            .sign(Algorithm.HMAC256(secret))
+            .build()
 
-        jwtRepository.saveToken(
-            userId = foundUser.id,
-            token = token,
-            expiresAt = expiresAt,
-            createdAt = now,
-            deviceInfo = deviceInfo
+        val decodedJWT = try {
+            jwtVerifierRefresh.verify(refreshToken)
+        } catch (e: Exception) {
+            application.log.error("Refresh token verification failed", e)
+            throw IllegalArgumentException("Invalid refresh token")
+        }
+
+        val email = decodedJWT.getClaim("email").asString()
+            ?: throw IllegalArgumentException("Invalid refresh token payload")
+
+        val foundUser: User = userRepository.findByEmail(email)
+            ?: throw IllegalArgumentException("User not found for refresh token")
+
+        val storedToken = jwtRepository.findByToken(refreshToken)
+            ?: throw IllegalArgumentException("Refresh token is not registered in the database")
+
+        val now = Instant.now()
+        if (storedToken.expiresAt.isBefore(now)) {
+            jwtRepository.deleteToken(refreshToken)
+            throw IllegalArgumentException("Refresh token expired")
+        }
+
+        jwtRepository.deleteToken(refreshToken)
+
+        val newAccessToken = createAccessToken(foundUser.email)
+        val newRefreshToken = createRefreshTokenAndSave(foundUser.id, foundUser.email, deviceInfo)
+
+        return LoginResponse(
+            accessToken = newAccessToken,
+            refreshToken = newRefreshToken
         )
-        return token
+    }
+
+    suspend fun logout(refreshToken: String) {
+        jwtRepository.deleteToken(refreshToken)
     }
 
     suspend fun customValidator(
