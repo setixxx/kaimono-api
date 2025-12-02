@@ -9,6 +9,7 @@ import io.ktor.server.request.receive
 import io.ktor.server.response.respond
 import io.ktor.server.routing.Route
 import io.ktor.server.routing.post
+import io.ktor.server.routing.route
 import org.koin.ktor.ext.inject
 import setixx.software.data.dto.UpdatePasswordRequest
 import setixx.software.data.dto.UpdatePasswordResponse
@@ -42,51 +43,53 @@ private suspend fun ApplicationCall.getPublicIdFromAccessToken(): String? {
 fun Route.userRoutes() {
     val userService by inject<UserService>()
 
-    post("/update-password") {
-        val request = try {
-            call.receive<UpdatePasswordRequest>()
-        } catch (e: Exception) {
-            call.respond(HttpStatusCode.BadRequest, "Invalid request body")
-            return@post
+    route("/user") {
+        post("/update-password") {
+            val request = try {
+                call.receive<UpdatePasswordRequest>()
+            } catch (e: Exception) {
+                call.respond(HttpStatusCode.BadRequest, "Invalid request body")
+                return@post
+            }
+
+            try {
+                val publicId = call.getPublicIdFromAccessToken() ?: return@post
+
+                userService.updatePassword(publicId, request)
+                call.respond(
+                    HttpStatusCode.OK,
+                    UpdatePasswordResponse("Password updated successfully")
+                )
+            } catch (e: IllegalArgumentException) {
+                call.respond(HttpStatusCode.BadRequest, e.message ?: "Invalid data")
+            } catch (e: Exception) {
+                call.respond(HttpStatusCode.InternalServerError, "Password update failed: ${e.message}")
+                e.printStackTrace()
+            }
         }
 
-        try {
-            val publicId = call.getPublicIdFromAccessToken() ?: return@post
+        post("/update-user") {
+            val request = try {
+                call.receive<UpdateUserInfoRequest>()
+            } catch (e: Exception) {
+                call.respond(HttpStatusCode.BadRequest, "Invalid request body")
+                return@post
+            }
 
-            userService.updatePassword(publicId, request)
-            call.respond(
-                HttpStatusCode.OK,
-                UpdatePasswordResponse("Password updated successfully")
-            )
-        } catch (e: IllegalArgumentException) {
-            call.respond(HttpStatusCode.BadRequest, e.message ?: "Invalid data")
-        } catch (e: Exception) {
-            call.respond(HttpStatusCode.InternalServerError, "Password update failed: ${e.message}")
-            e.printStackTrace()
-        }
-    }
+            try {
+                val publicId = call.getPublicIdFromAccessToken() ?: return@post
 
-    post("/update-user") {
-        val request = try {
-            call.receive<UpdateUserInfoRequest>()
-        } catch (e: Exception) {
-            call.respond(HttpStatusCode.BadRequest, "Invalid request body")
-            return@post
-        }
-
-        try {
-            val publicId = call.getPublicIdFromAccessToken() ?: return@post
-
-            userService.updateUserInfo(publicId, request)
-            call.respond(
-                HttpStatusCode.OK,
-                UpdateUserInfoResponse("User updated successfully")
-            )
-        } catch (e: IllegalArgumentException) {
-            call.respond(HttpStatusCode.BadRequest, e.message ?: "Invalid data")
-        } catch (e: Exception) {
-            call.respond(HttpStatusCode.InternalServerError, "User update failed: ${e.message}")
-            e.printStackTrace()
+                userService.updateUserInfo(publicId, request)
+                call.respond(
+                    HttpStatusCode.OK,
+                    UpdateUserInfoResponse("User updated successfully")
+                )
+            } catch (e: IllegalArgumentException) {
+                call.respond(HttpStatusCode.BadRequest, e.message ?: "Invalid data")
+            } catch (e: Exception) {
+                call.respond(HttpStatusCode.InternalServerError, "User update failed: ${e.message}")
+                e.printStackTrace()
+            }
         }
     }
 }
