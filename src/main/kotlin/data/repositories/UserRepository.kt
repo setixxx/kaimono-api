@@ -56,6 +56,20 @@ class UserRepository {
             .singleOrNull()
     }
 
+    suspend fun findByPhone(phone: String): User? = dbQuery {
+        Users.selectAll()
+            .where { Users.phone eq phone }
+            .map { rowToUser(it) }
+            .singleOrNull()
+    }
+
+    suspend fun findByPublicId(publicId: UUID): User? = dbQuery {
+        Users.selectAll()
+            .where { Users.publicId eq publicId }
+            .map { rowToUser(it) }
+            .singleOrNull()
+    }
+
     suspend fun updatePassword(
         id: Long,
         passwordHash: String,
@@ -68,19 +82,19 @@ class UserRepository {
     suspend fun updateUser(
         id: Long,
         name: String,
-        surname: String,
+        surname: String?,
         phone: String,
         email: String,
         birthday: LocalDate?,
         gender: String,
     ) = dbQuery {
         Users.update({ Users.id eq id }) {
-            if (!name.isBlank()) it[Users.name] = name
-            if (!surname.isBlank()) it[Users.surname] = surname
-            if (!phone.isBlank()) it[Users.phone] = phone
-            if (!email.isBlank()) it[Users.email] = email
+            it[Users.name] = name
+            if (!surname.isNullOrBlank()) it[Users.surname] = surname
+            it[Users.phone] = phone
+            it[Users.email] = email
             if (birthday != null) it[Users.birthday] = birthday
-            if (!gender.isBlank()) it[Users.gender] = gender
+            it[Users.gender] = gender
         }
     }
 

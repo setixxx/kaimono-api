@@ -1,19 +1,15 @@
 package setixx.software.services
 
-import com.sun.org.apache.xalan.internal.lib.ExsltDatetime.date
-import setixx.software.data.dto.LoginResponse
 import setixx.software.data.dto.LoginUserRequest
 import setixx.software.data.dto.RegisterUserRequest
 import setixx.software.data.dto.UpdatePasswordRequest
-import setixx.software.data.dto.UpdatePasswordResponse
 import setixx.software.data.dto.UpdateUserInfoRequest
 import setixx.software.data.repositories.UserRepository
+import setixx.software.data.tables.Users.phone
 import setixx.software.models.User
 import setixx.software.utils.dateParse
 import setixx.software.utils.hashString
-import java.security.MessageDigest
-import java.time.LocalDate
-import java.time.format.DateTimeFormatter
+import java.util.UUID
 
 class UserService(
     private val userRepository: UserRepository
@@ -68,39 +64,56 @@ class UserService(
     }
 
     suspend fun updatePassword(
-        email: String,
+        publicId: String,
         request: UpdatePasswordRequest,
     ) {
-        val user = userRepository.findByEmail(email)
-            ?: throw IllegalArgumentException("User email doesn't exist")
+        val user = userRepository.findByPublicId(UUID.fromString(publicId))
+            ?: throw IllegalArgumentException("User doesn't exist")
         val oldPasswordHash = hashString(request.oldPassword)
-        if (user.passwordHash != oldPasswordHash) {
-            throw IllegalArgumentException("User password doesn't match")
-        } else {
-            val newPasswordHash = hashString(request.newPassword)
-            userRepository.updatePassword(user.id, newPasswordHash)
-        }
+        if (user.passwordHash != oldPasswordHash) throw IllegalArgumentException("User password doesn't match")
+        if (request.newPassword.isBlank()) throw IllegalArgumentException("New password cannot be empty")
+        val newPasswordHash = hashString(request.newPassword)
+        userRepository.updatePassword(user.id, newPasswordHash)
     }
 
     suspend fun updateUserInfo(
-        email: String,
+        publicId: String,
         request: UpdateUserInfoRequest,
     ) {
-        val user = userRepository.findByEmail(email)
-            ?: throw IllegalArgumentException("User email doesn't exist")
+        val user = userRepository.findByPublicId(UUID.fromString(publicId))
+            ?: throw IllegalArgumentException("User doesn't exist")
+
+        val newName = request.name.takeIf { !it.isNullOrBlank() }
+        val newSurname = request.surname.takeIf { !it.isNullOrBlank() }
+        val newPhone = request.phone.takeIf { !it.isNullOrBlank() }?.also { phone ->
+            if (phone != user.phone) {
+                userRepository.findByPhone(phone)?.let {
+                    throw IllegalArgumentException("User with phone $phone already exists")
+                }
+            }
+        }
+        val newEmail = request.email.takeIf { !it.isNullOrBlank() }?.also { email ->
+            if (email != user.email) {
+                userRepository.findByEmail(email)?.let {
+                    throw IllegalArgumentException("User with email $email already exists")
+                }
+            }
+        }
+        val newGender = request.gender.takeIf { !it.isNullOrBlank() }
+
         val birthday = dateParse(request.birthDate)
-            ?: throw IllegalArgumentException("Incorrect Birthday date format")
-        if ((request.gender != "Male") || (request.gender != "Female"))
+        if (newGender != null && newGender != "Male" && newGender != "Female") {
             throw IllegalArgumentException("Incorrect Gender format")
+        }
 
         userRepository.updateUser(
             id = user.id,
-            name = request.name!!,
-            surname = request.surname!!,
-            phone = request.phone!!,
-            email = request.email!!,
-            birthday = birthday,
-            gender = request.gender,
+            name = newName ?: user.name,
+            surname = newSurname ?: user.surname,
+            phone = newPhone ?: user.phone,
+            email = newEmail ?: user.email,
+            birthday = birthday ?: user.birthday,
+            gender = newGender ?: user.gender,
         )
     }
 }

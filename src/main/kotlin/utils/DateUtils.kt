@@ -7,10 +7,14 @@ fun dateParse(
     date: String?,
 ): LocalDate? {
     return date?.let {
+
         try {
-             LocalDate.parse(it, DateTimeFormatter.ISO_LOCAL_DATE)
+            if (date.isBlank()){
+                return null
+            }
+            LocalDate.parse(it, DateTimeFormatter.ISO_LOCAL_DATE)
         } catch (e: Exception) {
-            null
+            throw IllegalArgumentException("Incorrect Birthday date format")
         }
     }
 }

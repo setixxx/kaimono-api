@@ -1,6 +1,8 @@
 package setixx.software.routes
 
+import com.auth0.jwt.JWT
 import io.ktor.http.HttpStatusCode
+import io.ktor.server.application.ApplicationCall
 import io.ktor.server.auth.jwt.JWTPrincipal
 import io.ktor.server.auth.principal
 import io.ktor.server.request.receive
@@ -8,12 +10,34 @@ import io.ktor.server.response.respond
 import io.ktor.server.routing.Route
 import io.ktor.server.routing.post
 import org.koin.ktor.ext.inject
-import setixx.software.data.dto.RegisterResponse
 import setixx.software.data.dto.UpdatePasswordRequest
 import setixx.software.data.dto.UpdatePasswordResponse
 import setixx.software.data.dto.UpdateUserInfoRequest
 import setixx.software.data.dto.UpdateUserInfoResponse
 import setixx.software.services.UserService
+
+private suspend fun ApplicationCall.getPublicIdFromAccessToken(): String? {
+    val principal = principal<JWTPrincipal>()
+
+    if (principal == null) {
+        respond(HttpStatusCode.Unauthorized, "Missing authentication")
+        return null
+    }
+
+    val tokenType = principal.payload.getClaim("type").asString()
+    if (tokenType != "access") {
+        respond(HttpStatusCode.Unauthorized, "Invalid token type. Expected access token")
+        return null
+    }
+
+    val publicId = principal.payload.getClaim("publicId").asString()
+    if (publicId.isNullOrBlank()) {
+        respond(HttpStatusCode.Unauthorized, "Invalid token payload")
+        return null
+    }
+
+    return publicId
+}
 
 fun Route.userRoutes() {
     val userService by inject<UserService>()
@@ -27,9 +51,9 @@ fun Route.userRoutes() {
         }
 
         try {
-            val principal = call.principal<JWTPrincipal>()
-            val email = principal!!.payload.getClaim("email").asString()
-            val passwordUpdate = userService.updatePassword(email, request)
+            val publicId = call.getPublicIdFromAccessToken() ?: return@post
+
+            userService.updatePassword(publicId, request)
             call.respond(
                 HttpStatusCode.OK,
                 UpdatePasswordResponse("Password updated successfully")
@@ -37,13 +61,12 @@ fun Route.userRoutes() {
         } catch (e: IllegalArgumentException) {
             call.respond(HttpStatusCode.BadRequest, e.message ?: "Invalid data")
         } catch (e: Exception) {
-            call.respond(HttpStatusCode.Conflict, "User registration failed " +
-                    "${e.message}")
+            call.respond(HttpStatusCode.InternalServerError, "Password update failed: ${e.message}")
             e.printStackTrace()
         }
     }
 
-    post("/update-user"){
+    post("/update-user") {
         val request = try {
             call.receive<UpdateUserInfoRequest>()
         } catch (e: Exception) {
@@ -52,17 +75,17 @@ fun Route.userRoutes() {
         }
 
         try {
-            val principal = call.principal<JWTPrincipal>()
-            val email = principal!!.payload.getClaim("email").asString()
-            val userUpdate = userService.updateUserInfo(email, request)
+            val publicId = call.getPublicIdFromAccessToken() ?: return@post
+
+            userService.updateUserInfo(publicId, request)
             call.respond(
                 HttpStatusCode.OK,
                 UpdateUserInfoResponse("User updated successfully")
             )
         } catch (e: IllegalArgumentException) {
-            call.respond(HttpStatusCode.BadRequest, "Invalid request body")
+            call.respond(HttpStatusCode.BadRequest, e.message ?: "Invalid data")
         } catch (e: Exception) {
-            call.respond(HttpStatusCode.Conflict, "User update failed")
+            call.respond(HttpStatusCode.InternalServerError, "User update failed: ${e.message}")
             e.printStackTrace()
         }
     }

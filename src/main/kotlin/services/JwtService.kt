@@ -37,18 +37,21 @@ class JwtService(
             .withIssuer(issuer)
             .build()
 
-    private fun createAccessToken(email: String): String {
+    private fun createAccessToken(
+        publicId: UUID
+    ): String {
         return JWT.create()
             .withAudience(audience)
             .withIssuer(issuer)
-            .withClaim("email", email)
+            .withClaim("publicId", publicId.toString())
+            .withClaim("type", "access")
             .withExpiresAt((Date(System.currentTimeMillis() + accessExpiration)))
             .sign(Algorithm.HMAC256(secret))
     }
 
     private suspend fun createRefreshTokenAndSave(
         userId: Long,
-        email: String,
+        publicId: UUID,
         deviceInfo: String
     ): String {
         val now = Instant.now()
@@ -57,7 +60,8 @@ class JwtService(
         val token = JWT.create()
             .withAudience(audience)
             .withIssuer(issuer)
-            .withClaim("email", email)
+            .withClaim("publicId", publicId.toString())
+            .withClaim("type", "refresh")
             .withExpiresAt(Date.from(expiresAt))
             .sign(Algorithm.HMAC256(secret))
 
@@ -73,7 +77,7 @@ class JwtService(
 
     suspend fun createAccessToken(loginUserRequest: LoginUserRequest): String? {
         val foundUser: User = userService.login(loginUserRequest)
-        return createAccessToken(foundUser.email)
+        return createAccessToken(foundUser.publicId)
     }
 
     suspend fun createRefreshToken(
@@ -85,7 +89,7 @@ class JwtService(
         foundToken?.let {
             jwtRepository.deleteTokenByUser(foundUser.id)
         }
-        return createRefreshTokenAndSave(foundUser.id, foundUser.email, deviceInfo)
+        return createRefreshTokenAndSave(foundUser.id, foundUser.publicId, deviceInfo)
     }
 
     suspend fun reissueTokens(
@@ -105,10 +109,16 @@ class JwtService(
             throw IllegalArgumentException("Invalid refresh token")
         }
 
-        val email = decodedJWT.getClaim("email").asString()
+        val publicIdString = decodedJWT.getClaim("publicId").asString()
             ?: throw IllegalArgumentException("Invalid refresh token payload")
 
-        val foundUser: User = userRepository.findByEmail(email)
+        val publicId = try {
+            UUID.fromString(publicIdString)
+        } catch (e: Exception) {
+            throw IllegalArgumentException("Invalid publicId format in refresh token")
+        }
+
+        val foundUser: User = userRepository.findByPublicId(publicId)
             ?: throw IllegalArgumentException("User not found for refresh token")
 
         val storedToken = jwtRepository.findByToken(refreshToken)
@@ -122,8 +132,8 @@ class JwtService(
 
         jwtRepository.deleteToken(refreshToken)
 
-        val newAccessToken = createAccessToken(foundUser.email)
-        val newRefreshToken = createRefreshTokenAndSave(foundUser.id, foundUser.email, deviceInfo)
+        val newAccessToken = createAccessToken(foundUser.publicId)
+        val newRefreshToken = createRefreshTokenAndSave(foundUser.id, foundUser.publicId, deviceInfo)
 
         return LoginResponse(
             accessToken = newAccessToken,
@@ -138,8 +148,17 @@ class JwtService(
     suspend fun customValidator(
         credential: JWTCredential,
     ): JWTPrincipal? {
-        val email: String? = extractEmail(credential)
-        val foundUser: User? = email?.let { userRepository.findByEmail(it) }
+        val publicIdString: String? = extractPublicId(credential)
+
+        val publicId: UUID? = publicIdString?.let {
+            try {
+                UUID.fromString(it)
+            } catch (e: Exception) {
+                null
+            }
+        }
+
+        val foundUser: User? = publicId?.let { userRepository.findByPublicId(it) }
 
         return foundUser?.let {
             if (audienceMatches(credential))
@@ -157,6 +176,6 @@ class JwtService(
     private fun getConfigProperty(path: String) =
         application.environment.config.property(path).getString()
 
-    private fun extractEmail(credential: JWTCredential): String? =
-        credential.payload.getClaim("email").asString()
+    private fun extractPublicId(credential: JWTCredential): String? =
+        credential.payload.getClaim("publicId").asString()
 }

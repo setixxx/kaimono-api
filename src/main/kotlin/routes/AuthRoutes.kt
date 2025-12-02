@@ -1,6 +1,8 @@
 package setixx.software.routes
 
+import com.auth0.jwt.JWT
 import io.ktor.http.*
+import io.ktor.server.application.ApplicationCall
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
@@ -12,6 +14,32 @@ import setixx.software.data.dto.RegisterResponse
 import setixx.software.data.dto.RegisterUserRequest
 import setixx.software.services.JwtService
 import setixx.software.services.UserService
+
+
+private suspend fun ApplicationCall.getRefreshToken(): String? {
+    val authHeader = request.headers["Authorization"]
+    val token = authHeader?.removePrefix("Bearer ")?.trim()
+
+    if (token.isNullOrBlank()) {
+        respond(HttpStatusCode.Unauthorized, "Missing or invalid Authorization header")
+        return null
+    }
+
+    return try {
+        val decoded = JWT.decode(token)
+        val tokenType = decoded.getClaim("type").asString()
+
+        if (tokenType != "refresh") {
+            respond(HttpStatusCode.Unauthorized, "Invalid token type. Expected refresh token")
+            return null
+        }
+
+        token
+    } catch (e: Exception) {
+        respond(HttpStatusCode.Unauthorized, "Invalid token format")
+        null
+    }
+}
 
 fun Route.authRoutes() {
     val userService by inject<UserService>()
@@ -35,8 +63,7 @@ fun Route.authRoutes() {
         } catch (e: IllegalArgumentException) {
             call.respond(HttpStatusCode.BadRequest, e.message ?: "Invalid data")
         } catch (e: Exception) {
-            call.respond(HttpStatusCode.Conflict, "User registration failed " +
-                    "${e.message}")
+            call.respond(HttpStatusCode.Conflict, "User registration failed")
             e.printStackTrace()
         }
     }
@@ -44,7 +71,7 @@ fun Route.authRoutes() {
         val request = try {
             call.receive<LoginUserRequest>()
         } catch (e: Exception) {
-            call.respond(HttpStatusCode.BadRequest, "Invalid request body ${e.localizedMessage}")
+            call.respond(HttpStatusCode.BadRequest, "Invalid request body")
             return@post
         }
 
@@ -67,17 +94,12 @@ fun Route.authRoutes() {
     }
 
     post("/refresh") {
-        val request = try {
-            call.receive<RefreshTokenRequest>()
-        } catch (e: Exception) {
-            call.respond(HttpStatusCode.BadRequest, "Invalid request body ${e.localizedMessage}")
-            return@post
-        }
-
         try {
+            val refreshToken = call.getRefreshToken() ?: return@post
+
             val deviceInfo = call.request.headers["User-Agent"] ?: "Unknown"
             val response: LoginResponse = jwtService.reissueTokens(
-                refreshToken = request.refreshToken,
+                refreshToken = refreshToken,
                 deviceInfo = deviceInfo
             )
 
@@ -91,15 +113,10 @@ fun Route.authRoutes() {
     }
 
     post("/logout") {
-        val request = try {
-            call.receive<RefreshTokenRequest>()
-        } catch (e: Exception) {
-            call.respond(HttpStatusCode.BadRequest, "Invalid request body")
-            return@post
-        }
-
         try {
-            jwtService.logout(request.refreshToken)
+            val refreshToken = call.getRefreshToken() ?: return@post
+
+            jwtService.logout(refreshToken)
             call.respond(HttpStatusCode.OK, "Logged out successfully")
         } catch (e: Exception) {
             call.respond(HttpStatusCode.InternalServerError, "Logout failed")

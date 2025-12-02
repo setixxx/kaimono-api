@@ -24,9 +24,9 @@ fun Application.configureRouting() {
 
             get("/") {
                 val principal = call.principal<JWTPrincipal>()
-                val email = principal?.payload?.getClaim("email")?.asString()
+                val publicId = principal?.payload?.getClaim("publicId")?.asString()
 
-                call.respondText("Hello, $email! You are authorized.")
+                call.respondText("Hello, $publicId! You are authorized.")
             }
         }
     }
