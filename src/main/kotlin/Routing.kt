@@ -10,6 +10,7 @@ import io.ktor.server.routing.*
 import setixx.software.data.repositories.UserRepository
 import setixx.software.routes.addressRoutes
 import setixx.software.routes.authRoutes
+import setixx.software.routes.cartRoutes
 import setixx.software.routes.paymentMethodRoutes
 import setixx.software.routes.userRoutes
 
@@ -23,6 +24,7 @@ fun Application.configureRouting() {
             userRoutes()
             addressRoutes()
             paymentMethodRoutes()
+            cartRoutes()
 
             get("/") {
                 val principal = call.principal<JWTPrincipal>()

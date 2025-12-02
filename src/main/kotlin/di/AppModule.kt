@@ -3,22 +3,30 @@ package setixx.software.di
 import io.ktor.server.application.Application
 import org.koin.dsl.module
 import setixx.software.data.repositories.AddressRepository
+import setixx.software.data.repositories.CartRepository
 import setixx.software.data.repositories.JwtRepository
 import setixx.software.data.repositories.PaymentMethodRepository
+import setixx.software.data.repositories.ProductRepository
 import setixx.software.data.repositories.UserRepository
 import setixx.software.services.AddressService
+import setixx.software.services.CartService
 import setixx.software.services.JwtService
 import setixx.software.services.PaymentMethodService
 import setixx.software.services.UserService
 
 val appModule = module {
+    // Репозитории
     single { UserRepository() }
     single { JwtRepository() }
     single { AddressRepository() }
     single { PaymentMethodRepository() }
+    single { CartRepository() }
+    single { ProductRepository() }
 
+    // Сервисы
     single { UserService(get()) }
     single { JwtService(get(), get(), get(), get()) }
     single { AddressService(get(), get()) }
     single { PaymentMethodService(get(), get()) }
+    single { CartService(get(), get(), get()) }
 }
