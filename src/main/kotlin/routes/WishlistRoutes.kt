@@ -84,7 +84,7 @@ fun Route.wishlistRoutes() {
             val request = try {
                 call.receive<UpdateWishlistItemRequest>()
             } catch (e: Exception) {
-                call.respond(HttpStatusCode.BadRequest, "Invalid request body")
+                call.respond(HttpStatusCode.BadRequest, "Invalid request body. ${e.localizedMessage}")
                 return@patch
             }
 

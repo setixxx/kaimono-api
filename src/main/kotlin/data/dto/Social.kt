@@ -38,7 +38,9 @@ data class UpdateReviewRequest(
 @Serializable
 data class AddToWishlistRequest(
     @SerialName("product_public_id")
-    val productPublicId: String
+    val productPublicId: String,
+    @SerialName("product_size_id")
+    val productSizeId: Long
 )
 
 @Serializable

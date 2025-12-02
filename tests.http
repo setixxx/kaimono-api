@@ -7,8 +7,8 @@
 // =================================================================================================
 
 // Переменные для тестового пользователя
-@user_email = testuser@example.com
-@user_password = newPassword123
+@user_email = testuser1@example.com
+@user_password = newPassword1231
 @user_name = Test
 @user_surname = User
 @user_phone = +1234567890
@@ -84,12 +84,12 @@ Accept: application/json
 
 
 ### 6. Получение продукта по публичному ID (GET /products/{publicId})
-GET {{baseURL}}/products/{{product_public_id_exists}}
+GET {{baseURL}}/products/69822976-de82-4ada-85aa-052d74c7e679
 Accept: application/json
 
 
 ### 7. Получение публичных отзывов для продукта (GET /products/{publicId}/reviews)
-GET {{baseURL}}/products/{{product_public_id_exists}}/reviews
+GET {{baseURL}}/products/e6248085-7845-483a-9da9-4eb2c9cad1f4/reviews
 Accept: application/json
 
 // =================================================================================================
@@ -123,7 +123,7 @@ Authorization: Bearer {{access_token}}
 
 {
     "old_password": "{{user_password}}",
-    "new_password": "newPassword123"
+    "new_password": "newPassword1231"
 }
 
 
@@ -180,8 +180,8 @@ Authorization: Bearer {{access_token}}
 {
   "card_number": "4111111111111112",
   "card_holder_name": "Test User",
-  "expiry_month": 9,
-  "expiry_year": 2026,
+  "expiry_month": 12,
+  "expiry_year": 2025,
   "is_default": true
 }
 
@@ -215,7 +215,7 @@ Content-Type: application/json
 Authorization: Bearer {{access_token}}
 
 {
-    "product_public_id": "32c224f6-75a1-45e6-9297-01548047342a",
+    "product_public_id": "c69bf0eb-c486-4c15-ba33-fce4630b4845",
     "size_id": 1,
     "quantity": 2
 }
@@ -306,8 +306,8 @@ Content-Type: application/json
 Authorization: Bearer {{access_token}}
 
 {
-    "product_public_id": "32c224f6-75a1-45e6-9297-01548047342a",
-    "order_public_id": "c773aa7a-61ef-4fca-859f-17fc776dd037",
+    "product_public_id": "c69bf0eb-c486-4c15-ba33-fce4630b4845",
+    "order_public_id": "d26a0999-c0d0-4717-85ab-b867d001d069",
     "rating": 5,
     "comment": "This product is amazing!"
 }
@@ -322,7 +322,7 @@ Authorization: Bearer {{access_token}}
 
 ### 29. Обновление отзыва (PATCH /reviews/{id})
 // DTO: UpdateReviewRequest (inferred: rating (optional), comment (optional))
-PATCH {{baseURL}}/reviews/{{review_id}}
+PATCH {{baseURL}}/reviews/14
 Content-Type: application/json
 Authorization: Bearer {{access_token}}
 
@@ -343,18 +343,13 @@ Authorization: Bearer {{access_token}}
 // =================================================================================================
 
 ### 31. Добавление товара в список желаний (POST /wishlist)
-// DTO: AddToWishlistRequest (inferred: product_public_id, size_id)
-// Предполагаем, что ответ возвращает объект списка желаний.
-// В реальном тесте нужно будет парсить массив items, чтобы получить wishlistItemId.
-// Пока используем заглушку
-// Замените 999 на ID первого элемента из ответа.
 POST {{baseURL}}/wishlist
 Content-Type: application/json
 Authorization: Bearer {{access_token}}
 
 {
-    "product_public_id": "32c224f6-75a1-45e6-9297-01548047342a",
-    "size_id": 1
+    "product_public_id": "c69bf0eb-c486-4c15-ba33-fce4630b4845",
+    "product_size_id": 1
 }
 
 
@@ -365,14 +360,12 @@ Authorization: Bearer {{access_token}}
 
 
 ### 33. Обновление размера товара в списке желаний (PATCH /wishlist/{id}/size)
-// DTO: UpdateWishlistItemRequest (inferred: size_id)
-// Временно используем заглушку для ID элемента.
-PATCH {{baseURL}}/wishlist/999/size
+PATCH {{baseURL}}/wishlist/8/size
 Content-Type: application/json
 Authorization: Bearer {{access_token}}
 
 {
-    "size_id": {{product_size_id_exists}}
+    "product_size_id": 1
 }
 
 

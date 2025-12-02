@@ -22,10 +22,17 @@ class WishlistService(
         val product = productRepository.findProductByPublicId(UUID.fromString(request.productPublicId))
             ?: throw IllegalArgumentException("Product not found")
 
+        val productSize = productRepository.findProductSizeById(request.productSizeId)
+            ?: throw IllegalArgumentException("Product size not found")
+
+        if (productSize.productId != product.id) {
+            throw IllegalArgumentException("Product size does not belong to this product")
+        }
+
         wishlistRepository.addToWishlist(
             userId = user.id,
             productId = product.id,
-            productSizeId = null
+            productSizeId = request.productSizeId
         )
 
         return getWishlist(userPublicId)

@@ -20,11 +20,9 @@ fun Route.productRoutes() {
                     ?.split(",")
                     ?.mapNotNull { it.trim().toLongOrNull() }
 
-                // Фильтр по цене
                 val minPrice = call.request.queryParameters["min_price"]?.toDoubleOrNull()
                 val maxPrice = call.request.queryParameters["max_price"]?.toDoubleOrNull()
 
-                // Фильтр по наличию на складе
                 val inStock = call.request.queryParameters["in_stock"]?.toBooleanStrictOrNull()
 
                 val sortBy = call.request.queryParameters["sort_by"]

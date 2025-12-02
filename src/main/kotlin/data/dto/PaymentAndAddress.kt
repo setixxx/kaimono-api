@@ -79,7 +79,7 @@ data class PaymentMethodResponse(
 @Serializable
 data class ProcessPaymentRequest(
     @SerialName("order_id")
-    val orderId: String, // Public ID
+    val orderId: String,
 
     @SerialName("payment_method_id")
     val paymentMethodId: Long? = null

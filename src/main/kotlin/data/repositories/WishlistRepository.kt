@@ -31,7 +31,6 @@ class WishlistRepository {
             return@dbQuery existing.copy(productSizeId = productSizeId)
         }
 
-        // Если товара нет, добавляем новый
         val insertStatement = Wishlist.insert {
             it[Wishlist.userId] = userId
             it[Wishlist.productId] = productId
