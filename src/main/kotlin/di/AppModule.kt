@@ -17,6 +17,7 @@ import setixx.software.services.CartService
 import setixx.software.services.JwtService
 import setixx.software.services.OrderService
 import setixx.software.services.PaymentMethodService
+import setixx.software.services.ProductSearchService
 import setixx.software.services.ReviewService
 import setixx.software.services.UserService
 import setixx.software.services.WishlistService
@@ -41,4 +42,5 @@ val appModule = module {
     single { OrderService(get(), get(), get(), get(), get(), get()) }
     single { ReviewService(get(), get(), get(), get()) }
     single { WishlistService(get(), get(), get()) }
+    single { ProductSearchService(get()) }
 }

@@ -1,13 +1,17 @@
 package setixx.software.data.repositories
 
 import org.jetbrains.exposed.sql.*
+import setixx.software.data.tables.Categories
+import setixx.software.data.tables.ProductCategories
 import setixx.software.data.tables.ProductImages
 import setixx.software.data.tables.ProductSizes
 import setixx.software.data.tables.Products
+import setixx.software.models.Category
 import setixx.software.models.Product
 import setixx.software.models.ProductImage
 import setixx.software.models.ProductSize
 import setixx.software.utils.dbQuery
+import java.math.BigDecimal
 import java.util.UUID
 
 class ProductRepository {
@@ -57,6 +61,175 @@ class ProductRepository {
                 .limit(1)
                 .map { it[ProductImages.imageUrl] }
                 .singleOrNull()
+    }
+
+    suspend fun searchProducts(
+        query: String?,
+        categoryIds: List<Long>?,
+        minPrice: Double?,
+        maxPrice: Double?,
+        inStock: Boolean?,
+        sortBy: String?,
+        sortOrder: String?,
+        offset: Int,
+        limit: Int
+    ): List<Product> = dbQuery {
+
+        var selectQuery = Products.selectAll()
+
+        if (!query.isNullOrBlank()) {
+            selectQuery = selectQuery.andWhere {
+                (Products.name.lowerCase() like "%${query.lowercase()}%") or
+                        (Products.description.lowerCase() like "%${query.lowercase()}%")
+            }
+        }
+
+        if (!categoryIds.isNullOrEmpty()) {
+            val productIdsInCategories = ProductCategories
+                .select(ProductCategories.productId)
+                .where { ProductCategories.categoryId inList categoryIds }
+                .map { it[ProductCategories.productId] }
+
+            if (productIdsInCategories.isNotEmpty()) {
+                selectQuery = selectQuery.andWhere { Products.id inList productIdsInCategories }
+            } else {
+                return@dbQuery emptyList()
+            }
+        }
+
+        if (minPrice != null) {
+            selectQuery = selectQuery.andWhere {
+                Products.basePrice greaterEq BigDecimal(minPrice)
+            }
+        }
+        if (maxPrice != null) {
+            selectQuery = selectQuery.andWhere {
+                Products.basePrice lessEq BigDecimal(maxPrice)
+            }
+        }
+
+        if (inStock == true) {
+            val productIdsInStock = ProductSizes
+                .select(ProductSizes.productId)
+                .where { ProductSizes.stockQuantity greater 0 }
+                .map { it[ProductSizes.productId] }
+                .distinct()
+
+            if (productIdsInStock.isNotEmpty()) {
+                selectQuery = selectQuery.andWhere { Products.id inList productIdsInStock }
+            } else {
+                return@dbQuery emptyList()
+            }
+        }
+
+        selectQuery = selectQuery.andWhere { Products.isAvailable eq true }
+
+        selectQuery = when (sortBy?.lowercase()) {
+            "price" -> {
+                if (sortOrder?.lowercase() == "desc") {
+                    selectQuery.orderBy(Products.basePrice to SortOrder.DESC)
+                } else {
+                    selectQuery.orderBy(Products.basePrice to SortOrder.ASC)
+                }
+            }
+            "name" -> {
+                if (sortOrder?.lowercase() == "desc") {
+                    selectQuery.orderBy(Products.name to SortOrder.DESC)
+                } else {
+                    selectQuery.orderBy(Products.name to SortOrder.ASC)
+                }
+            }
+            "created" -> {
+                if (sortOrder?.lowercase() == "desc") {
+                    selectQuery.orderBy(Products.createdAt to SortOrder.DESC)
+                } else {
+                    selectQuery.orderBy(Products.createdAt to SortOrder.ASC)
+                }
+            }
+            else -> {
+                selectQuery.orderBy(Products.createdAt to SortOrder.DESC)
+            }
+        }
+
+        selectQuery
+            .limit(limit).offset(offset.toLong())
+            .map { rowToProduct(it) }
+    }
+
+    suspend fun countProducts(
+        query: String?,
+        categoryIds: List<Long>?,
+        minPrice: Double?,
+        maxPrice: Double?,
+        inStock: Boolean?
+    ): Long = dbQuery {
+
+        var countQuery = Products.selectAll()
+
+        if (!query.isNullOrBlank()) {
+            countQuery = countQuery.andWhere {
+                (Products.name.lowerCase() like "%${query.lowercase()}%") or
+                        (Products.description.lowerCase() like "%${query.lowercase()}%")
+            }
+        }
+
+        if (!categoryIds.isNullOrEmpty()) {
+            val productIdsInCategories = ProductCategories
+                .select(ProductCategories.productId)
+                .where { ProductCategories.categoryId inList categoryIds }
+                .map { it[ProductCategories.productId] }
+
+            if (productIdsInCategories.isEmpty()) {
+                return@dbQuery 0L
+            }
+            countQuery = countQuery.andWhere { Products.id inList productIdsInCategories }
+        }
+
+        if (minPrice != null) {
+            countQuery = countQuery.andWhere {
+                Products.basePrice greaterEq BigDecimal(minPrice)
+            }
+        }
+        if (maxPrice != null) {
+            countQuery = countQuery.andWhere {
+                Products.basePrice lessEq BigDecimal(maxPrice)
+            }
+        }
+
+        if (inStock == true) {
+            val productIdsInStock = ProductSizes
+                .select(ProductSizes.productId)
+                .where { ProductSizes.stockQuantity greater 0 }
+                .map { it[ProductSizes.productId] }
+                .distinct()
+
+            if (productIdsInStock.isEmpty()) {
+                return@dbQuery 0L
+            }
+            countQuery = countQuery.andWhere { Products.id inList productIdsInStock }
+        }
+
+        countQuery = countQuery.andWhere { Products.isAvailable eq true }
+
+        countQuery.count()
+    }
+
+    suspend fun findCategoriesByProductId(productId: Long): List<Category> = dbQuery {
+        (Categories innerJoin ProductCategories)
+            .selectAll()
+            .where { ProductCategories.productId eq productId }
+            .map { rowToCategory(it) }
+    }
+
+    private fun rowToCategory(row: ResultRow): Category {
+        return Category(
+            id = row[Categories.id],
+            name = row[Categories.name],
+            description = row[Categories.description],
+            parentId = row[Categories.parentId],
+            createdAt = row[Categories.createdAt],
+            updatedAt = row[Categories.updatedAt]
+        )
     }
 
     private fun rowToProduct(row: ResultRow): Product {

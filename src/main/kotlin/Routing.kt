@@ -13,6 +13,7 @@ import setixx.software.routes.authRoutes
 import setixx.software.routes.cartRoutes
 import setixx.software.routes.orderRoutes
 import setixx.software.routes.paymentMethodRoutes
+import setixx.software.routes.productRoutes
 import setixx.software.routes.publicReviewRoutes
 import setixx.software.routes.reviewRoutes
 import setixx.software.routes.userRoutes
@@ -24,6 +25,7 @@ fun Application.configureRouting() {
             authRoutes()
         }
         publicReviewRoutes()
+        productRoutes()
 
         authenticate {
             userRoutes()
