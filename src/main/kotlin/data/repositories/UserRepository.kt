@@ -70,6 +70,13 @@ class UserRepository {
             .singleOrNull()
     }
 
+    suspend fun findById(id: Long): User? = dbQuery {
+        Users.selectAll()
+            .where { Users.id eq id }
+            .map { rowToUser(it) }
+            .singleOrNull()
+    }
+
     suspend fun updatePassword(
         id: Long,
         passwordHash: String,

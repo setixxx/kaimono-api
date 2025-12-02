@@ -29,6 +29,11 @@ data class ReviewResponse(
     val createdAt: String
 )
 
+@Serializable
+data class UpdateReviewRequest(
+    val rating: Short? = null,
+    val comment: String? = null
+)
 
 @Serializable
 data class AddToWishlistRequest(

@@ -13,6 +13,8 @@ import setixx.software.routes.authRoutes
 import setixx.software.routes.cartRoutes
 import setixx.software.routes.orderRoutes
 import setixx.software.routes.paymentMethodRoutes
+import setixx.software.routes.publicReviewRoutes
+import setixx.software.routes.reviewRoutes
 import setixx.software.routes.userRoutes
 
 fun Application.configureRouting() {
@@ -20,6 +22,7 @@ fun Application.configureRouting() {
         route("/auth") {
             authRoutes()
         }
+        publicReviewRoutes()
 
         authenticate {
             userRoutes()
@@ -27,6 +30,7 @@ fun Application.configureRouting() {
             paymentMethodRoutes()
             cartRoutes()
             orderRoutes()
+            reviewRoutes()
 
             get("/") {
                 val principal = call.principal<JWTPrincipal>()
