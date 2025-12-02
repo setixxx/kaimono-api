@@ -40,7 +40,6 @@ class ReviewService(
             orderId = order.id
         }
 
-        // Создаем отзыв
         val review = reviewRepository.createReview(
             userId = user.id,
             productId = product.id,
