@@ -21,23 +21,6 @@ data class CreateAddressRequest(
 )
 
 @Serializable
-data class UpdateAddressRequest(
-    val city: String? = null,
-    val street: String? = null,
-    val house: String? = null,
-    val apartment: String? = null,
-
-    @SerialName("zip_code")
-    val zipCode: String? = null,
-
-    @SerialName("additional_info")
-    val additionalInfo: String? = null,
-
-    @SerialName("is_default")
-    val isDefault: Boolean? = null
-)
-
-@Serializable
 data class AddressResponse(
     val id: Long,
     val city: String,

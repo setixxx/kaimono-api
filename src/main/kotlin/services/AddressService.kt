@@ -2,7 +2,6 @@ package setixx.software.services
 
 import setixx.software.data.dto.AddressResponse
 import setixx.software.data.dto.CreateAddressRequest
-import setixx.software.data.dto.UpdateAddressRequest
 import setixx.software.data.repositories.AddressRepository
 import setixx.software.data.repositories.UserRepository
 import java.util.UUID

@@ -42,12 +42,64 @@ data class AddToWishlistRequest(
 )
 
 @Serializable
+data class UpdateWishlistItemRequest(
+    @SerialName("product_size_id")
+    val productSizeId: Long
+)
+
+@Serializable
+data class WishlistResponse(
+    val items: List<WishlistItemResponse>
+)
+
+@Serializable
 data class WishlistItemResponse(
     val id: Long,
-    val product: ProductResponse,
+
+    @SerialName("product_public_id")
+    val productPublicId: String,
+
+    @SerialName("product_name")
+    val productName: String,
+
+    @SerialName("product_description")
+    val productDescription: String,
+
+    @SerialName("product_image")
+    val productImage: String?,
+
+    @SerialName("base_price")
+    val basePrice: String,
+
+    @SerialName("is_available")
+    val isAvailable: Boolean,
+
+    @SerialName("selected_size_id")
+    val selectedSizeId: Long?,
+
+    @SerialName("selected_size")
+    val selectedSize: String?,
+
+    @SerialName("available_sizes")
+    val availableSizes: List<ProductSizeInfo>,
 
     @SerialName("added_at")
     val addedAt: String
+)
+
+@Serializable
+data class ProductSizeInfo(
+    val id: Long,
+    val size: String,
+
+    @SerialName("stock_quantity")
+    val stockQuantity: Int,
+
+    @SerialName("price_modifier")
+    val priceModifier: String,
+
+    @SerialName("final_price")
+    val finalPrice: String
 )
 
 @Serializable

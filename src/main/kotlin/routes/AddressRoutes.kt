@@ -9,7 +9,6 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import org.koin.ktor.ext.inject
 import setixx.software.data.dto.CreateAddressRequest
-import setixx.software.data.dto.UpdateAddressRequest
 import setixx.software.services.AddressService
 
 private suspend fun ApplicationCall.getPublicIdFromAccessToken(): String? {

@@ -9,7 +9,6 @@ import io.ktor.server.routing.*
 import org.koin.ktor.ext.inject
 import setixx.software.data.dto.LoginResponse
 import setixx.software.data.dto.LoginUserRequest
-import setixx.software.data.dto.RefreshTokenRequest
 import setixx.software.data.dto.RegisterResponse
 import setixx.software.data.dto.RegisterUserRequest
 import setixx.software.services.JwtService
