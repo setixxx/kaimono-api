@@ -23,9 +23,6 @@ class UserService(
         if (request.password.length < 6) {
             throw IllegalArgumentException("Password is too short")
         }
-        if (request.name.isEmpty()) {
-            throw IllegalArgumentException("Name cannot be empty")
-        }
         if (request.phone.isBlank()) {
             throw IllegalArgumentException("Phone number cannot be empty")
         }
@@ -41,7 +38,7 @@ class UserService(
         val birthdayDate = dateParse(request.birthday)
 
         return userRepository.registerUser(
-            name = request.name,
+            name = request.email.substringBefore("@"),
             surname = request.surname,
             phone = request.phone,
             email = request.email,

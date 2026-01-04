@@ -45,4 +45,6 @@ dependencies {
     implementation("com.zaxxer:HikariCP:$hikari_version")
     implementation("io.insert-koin:koin-ktor:${koin_version}")
     testImplementation("io.ktor:ktor-client-content-negotiation")
+    implementation("io.ktor:ktor-server-swagger")
+    implementation("io.ktor:ktor-server-cors")
 }

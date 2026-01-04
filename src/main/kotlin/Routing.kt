@@ -5,6 +5,7 @@ import io.ktor.server.auth.authenticate
 import io.ktor.server.auth.jwt.JWTPrincipal
 import io.ktor.server.auth.principal
 import io.ktor.server.http.content.*
+import io.ktor.server.plugins.swagger.swaggerUI
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import setixx.software.data.repositories.UserRepository
@@ -24,9 +25,9 @@ fun Application.configureRouting() {
         route("/auth") {
             authRoutes()
         }
+        swaggerUI(path = "swagger", swaggerFile = "openapi/documentation.yaml")
         publicReviewRoutes()
         productRoutes()
-
         authenticate {
             userRoutes()
             addressRoutes()
