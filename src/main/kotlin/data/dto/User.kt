@@ -33,3 +33,15 @@ data class UpdateUserInfoResponse(
     @SerialName("user_update_status")
     val userUpdateStatus: String
 )
+
+@Serializable
+data class UserInfoResponse(
+    val id: String,
+    val name: String,
+    val surname: String,
+    val phone: String,
+    val email: String,
+    @SerialName("birth_date")
+    val birthDate: String = "",
+    val gender: String,
+)

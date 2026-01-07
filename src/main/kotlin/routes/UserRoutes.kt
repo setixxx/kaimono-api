@@ -7,7 +7,9 @@ import io.ktor.server.auth.jwt.JWTPrincipal
 import io.ktor.server.auth.principal
 import io.ktor.server.request.receive
 import io.ktor.server.response.respond
+import io.ktor.server.response.respondText
 import io.ktor.server.routing.Route
+import io.ktor.server.routing.get
 import io.ktor.server.routing.post
 import io.ktor.server.routing.route
 import org.koin.ktor.ext.inject
@@ -89,6 +91,18 @@ fun Route.userRoutes() {
             } catch (e: Exception) {
                 call.respond(HttpStatusCode.InternalServerError, "User update failed: ${e.message}")
                 e.printStackTrace()
+            }
+        }
+
+        get("/me") {
+            try {
+                val publicId = call.getPublicIdFromAccessToken() ?: return@get
+                val user = userService.getUserInfo(publicId)
+                call.respond(HttpStatusCode.OK, user)
+            } catch (e: IllegalArgumentException) {
+                call.respond(HttpStatusCode.BadRequest, e.message ?: "Invalid data")
+            } catch (e: Exception) {
+                call.respond(HttpStatusCode.InternalServerError, "User get failed: ${e.message}")
             }
         }
     }

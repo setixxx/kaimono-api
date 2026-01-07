@@ -13,6 +13,9 @@ import setixx.software.data.dto.RegisterResponse
 import setixx.software.data.dto.RegisterUserRequest
 import setixx.software.services.JwtService
 import setixx.software.services.UserService
+import setixx.software.utils.AuthenticationException
+import setixx.software.utils.UserAlreadyExistsException
+import setixx.software.utils.ValidationException
 
 
 private suspend fun ApplicationCall.getRefreshToken(): String? {
@@ -59,10 +62,12 @@ fun Route.authRoutes() {
                 HttpStatusCode.Created,
                 RegisterResponse(publicId = user.publicId.toString())
             )
-        } catch (e: IllegalArgumentException) {
-            call.respond(HttpStatusCode.BadRequest, e.message ?: "Invalid data")
+        } catch (e: ValidationException) {
+            call.respond(HttpStatusCode.BadRequest, mapOf("error" to e.message))
+        } catch (e: UserAlreadyExistsException) {
+            call.respond(HttpStatusCode.Conflict, mapOf("error" to e.message))
         } catch (e: Exception) {
-            call.respond(HttpStatusCode.Conflict, "User registration failed")
+            call.respond(HttpStatusCode.InternalServerError, mapOf("error" to "Registration failed"))
             e.printStackTrace()
         }
     }
@@ -80,14 +85,14 @@ fun Route.authRoutes() {
             val refreshToken: String = jwtService.createRefreshToken(request, deviceInfo)
 
             accessToken?.let {
-                call.respond(LoginResponse(refreshToken, accessToken))
+                call.respond(HttpStatusCode.OK, LoginResponse(refreshToken, accessToken))
             } ?: call.respond(
                 message = HttpStatusCode.Unauthorized
             )
-        } catch (e: IllegalArgumentException) {
-            call.respond(HttpStatusCode.BadRequest, e.message ?: "Invalid data")
+        } catch (e: AuthenticationException) {
+            call.respond(HttpStatusCode.Unauthorized, mapOf("error" to e.message))
         } catch (e: Exception) {
-            call.respond(HttpStatusCode.Conflict, "User login failed")
+            call.respond(HttpStatusCode.InternalServerError, mapOf("error" to "Login failed"))
             e.printStackTrace()
         }
     }
