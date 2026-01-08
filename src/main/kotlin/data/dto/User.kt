@@ -24,6 +24,7 @@ data class UpdateUserInfoRequest(
     val surname: String? = null,
     val phone: String? = null,
     val email: String? = null,
+    @SerialName("birth_date")
     val birthDate: String? = null,
     val gender: String? = null,
 )
@@ -38,10 +39,10 @@ data class UpdateUserInfoResponse(
 data class UserInfoResponse(
     val id: String,
     val name: String,
-    val surname: String,
+    val surname: String?,
     val phone: String,
     val email: String,
     @SerialName("birth_date")
-    val birthDate: String = "",
+    val birthDate: String?,
     val gender: String,
 )

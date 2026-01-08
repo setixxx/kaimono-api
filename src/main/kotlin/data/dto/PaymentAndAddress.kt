@@ -52,6 +52,8 @@ data class CreatePaymentMethodRequest(
     @SerialName("expiry_year")
     val expiryYear: Short,
 
+    val cvv: String,
+
     @SerialName("is_default")
     val isDefault: Boolean = false
 )
@@ -71,6 +73,8 @@ data class PaymentMethodResponse(
 
     @SerialName("expiry_year")
     val expiryYear: Short,
+
+    val cvv: String,
 
     @SerialName("is_default")
     val isDefault: Boolean

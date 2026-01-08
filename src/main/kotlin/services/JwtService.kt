@@ -40,12 +40,14 @@ class JwtService(
     private fun createAccessToken(
         publicId: UUID
     ): String {
+        val expiresAt = Instant.ofEpochMilli(System.currentTimeMillis() + accessExpiration)
+
         return JWT.create()
             .withAudience(audience)
             .withIssuer(issuer)
             .withClaim("publicId", publicId.toString())
             .withClaim("type", "access")
-            .withExpiresAt((Date(System.currentTimeMillis() + accessExpiration)))
+            .withExpiresAt(Date.from(expiresAt))
             .sign(Algorithm.HMAC256(secret))
     }
 

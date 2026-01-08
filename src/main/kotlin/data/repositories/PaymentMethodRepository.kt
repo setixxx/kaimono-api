@@ -15,6 +15,7 @@ class PaymentMethodRepository {
         cardHolderName: String,
         expiryMonth: Short,
         expiryYear: Short,
+        cvv: String,
         isDefault: Boolean
     ): PaymentMethod = dbQuery {
         val now = Instant.now()
@@ -25,6 +26,7 @@ class PaymentMethodRepository {
             it[PaymentMethods.cardHolderName] = cardHolderName
             it[PaymentMethods.expiryMonth] = expiryMonth
             it[PaymentMethods.expiryYear] = expiryYear
+            it[PaymentMethods.cvv] = cvv
             it[PaymentMethods.isDefault] = isDefault
             it[PaymentMethods.createdAt] = now
         }
@@ -36,6 +38,7 @@ class PaymentMethodRepository {
             cardHolderName = cardHolderName,
             expiryMonth = expiryMonth,
             expiryYear = expiryYear,
+            cvv = cvv,
             isDefault = isDefault,
             createdAt = now
         )
@@ -44,7 +47,7 @@ class PaymentMethodRepository {
     suspend fun findPaymentMethodsByUserId(userId: Long): List<PaymentMethod> = dbQuery {
         PaymentMethods.selectAll()
             .where { PaymentMethods.userId eq userId }
-            .orderBy(PaymentMethods.isDefault to SortOrder.DESC)
+            .orderBy(PaymentMethods.id to SortOrder.ASC)
             .map { rowToPaymentMethod(it) }
     }
 
@@ -76,6 +79,7 @@ class PaymentMethodRepository {
             cardHolderName = row[PaymentMethods.cardHolderName],
             expiryMonth = row[PaymentMethods.expiryMonth],
             expiryYear = row[PaymentMethods.expiryYear],
+            cvv = row[PaymentMethods.cvv],
             isDefault = row[PaymentMethods.isDefault],
             createdAt = row[PaymentMethods.createdAt]
         )

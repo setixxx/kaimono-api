@@ -9,6 +9,7 @@ data class PaymentMethod(
     val cardHolderName: String,
     val expiryMonth: Short,
     val expiryYear: Short,
+    val cvv: String,
     val isDefault: Boolean,
     val createdAt: Instant
 )

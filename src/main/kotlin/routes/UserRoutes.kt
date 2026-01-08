@@ -10,6 +10,7 @@ import io.ktor.server.response.respond
 import io.ktor.server.response.respondText
 import io.ktor.server.routing.Route
 import io.ktor.server.routing.get
+import io.ktor.server.routing.patch
 import io.ktor.server.routing.post
 import io.ktor.server.routing.route
 import org.koin.ktor.ext.inject
@@ -82,9 +83,10 @@ fun Route.userRoutes() {
                 val publicId = call.getPublicIdFromAccessToken() ?: return@post
 
                 userService.updateUserInfo(publicId, request)
+                val user = userService.getUserInfo(publicId)
                 call.respond(
                     HttpStatusCode.OK,
-                    UpdateUserInfoResponse("User updated successfully")
+                    user
                 )
             } catch (e: IllegalArgumentException) {
                 call.respond(HttpStatusCode.BadRequest, e.message ?: "Invalid data")

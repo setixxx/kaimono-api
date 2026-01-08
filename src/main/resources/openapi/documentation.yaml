@@ -1020,26 +1020,37 @@ components:
         - card_holder_name
         - expiry_month
         - expiry_year
+        - cvv
       properties:
         card_number:
           type: string
           example: "4242424242424242"
+          description: "Card number (13-19 digits)"
         card_holder_name:
           type: string
           example: "IVAN IVANOV"
+          description: "Name on the card"
         expiry_month:
           type: integer
           format: int16
           minimum: 1
           maximum: 12
           example: 12
+          description: "Card expiry month (1-12)"
         expiry_year:
           type: integer
           format: int16
           example: 2026
+          description: "Card expiry year"
+        cvv:
+          type: string
+          example: "123"
+          pattern: "^[0-9]{3}$"
+          description: "Card security code (3 digits)"
         is_default:
           type: boolean
           default: false
+          description: "Set as default payment method"
 
     PaymentMethodResponse:
       type: object
@@ -1047,19 +1058,32 @@ components:
         id:
           type: integer
           format: int64
+          description: "Payment method ID"
         card_number_last4:
           type: string
           example: "4242"
+          description: "Last 4 digits of card number"
         card_holder_name:
           type: string
+          example: "IVAN IVANOV"
+          description: "Name on the card"
         expiry_month:
           type: integer
           format: int16
+          example: 12
+          description: "Card expiry month"
         expiry_year:
           type: integer
           format: int16
+          example: 2026
+          description: "Card expiry year"
+        cvv:
+          type: string
+          example: "123"
+          description: "Card security code"
         is_default:
           type: boolean
+          description: "Is this the default payment method"
 
     # ==================== PRODUCT SCHEMAS ====================
     ProductListResponse:

@@ -19,7 +19,7 @@ class PaymentMethodService(
         val user = userRepository.findByPublicId(UUID.fromString(userPublicId))
             ?: throw IllegalArgumentException("User not found")
 
-        if (request.cardNumber.length < 13 || request.cardNumber.length > 19) {
+        if (request.cardNumber.length !in 13..19) {
             throw IllegalArgumentException("Invalid card number length")
         }
         if (!request.cardNumber.all { it.isDigit() }) {
@@ -38,6 +38,13 @@ class PaymentMethodService(
             throw IllegalArgumentException("Card has expired")
         }
 
+        if (request.cvv.length != 3) {
+            throw IllegalArgumentException("CVV must be 3 digits")
+        }
+        if (!request.cvv.all { it.isDigit() }) {
+            throw IllegalArgumentException("CVV must contain only digits")
+        }
+
         val last4 = request.cardNumber.takeLast(4)
 
         val paymentMethod = paymentMethodRepository.createPaymentMethod(
@@ -46,6 +53,7 @@ class PaymentMethodService(
             cardHolderName = request.cardHolderName,
             expiryMonth = request.expiryMonth,
             expiryYear = request.expiryYear,
+            cvv = request.cvv,
             isDefault = request.isDefault
         )
 
@@ -55,6 +63,7 @@ class PaymentMethodService(
             cardHolderName = paymentMethod.cardHolderName,
             expiryMonth = paymentMethod.expiryMonth,
             expiryYear = paymentMethod.expiryYear,
+            cvv = paymentMethod.cvv,
             isDefault = paymentMethod.isDefault
         )
     }
@@ -72,6 +81,7 @@ class PaymentMethodService(
                 cardHolderName = method.cardHolderName,
                 expiryMonth = method.expiryMonth,
                 expiryYear = method.expiryYear,
+                cvv = method.cvv,
                 isDefault = method.isDefault
             )
         }
@@ -83,9 +93,6 @@ class PaymentMethodService(
     ): PaymentMethodResponse {
         val user = userRepository.findByPublicId(UUID.fromString(userPublicId))
             ?: throw IllegalArgumentException("User not found")
-
-        val existingMethod = paymentMethodRepository.findPaymentMethodById(paymentMethodId, user.id)
-            ?: throw IllegalArgumentException("Payment method not found")
 
         val updated = paymentMethodRepository.setDefaultPaymentMethod(paymentMethodId, user.id)
 
@@ -102,6 +109,7 @@ class PaymentMethodService(
             cardHolderName = updatedMethod.cardHolderName,
             expiryMonth = updatedMethod.expiryMonth,
             expiryYear = updatedMethod.expiryYear,
+            cvv = updatedMethod.cvv,
             isDefault = updatedMethod.isDefault
         )
     }

@@ -130,10 +130,10 @@ class UserService(
         return UserInfoResponse(
             id = publicId,
             name = user.name,
-            surname = user.surname.orEmpty(),
+            surname = user.surname,
             phone = user.phone,
             email = user.email,
-            birthDate = user.birthday.toString(),
+            birthDate = user.birthday?.toString(),
             gender = user.gender,
         )
     }

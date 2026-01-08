@@ -50,7 +50,7 @@ class AddressRepository {
     suspend fun findAddressesByUserId(userId: Long): List<Address> = dbQuery {
         Addresses.selectAll()
             .where { Addresses.userId eq userId }
-            .orderBy(Addresses.isDefault to SortOrder.DESC)
+            .orderBy(Addresses.id to SortOrder.ASC)
             .map { rowToAddress(it) }
     }
 

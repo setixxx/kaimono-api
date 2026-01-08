@@ -11,6 +11,7 @@ object PaymentMethods : Table("payment_methods") {
     val cardHolderName = varchar("card_holder_name", 100)
     val expiryMonth = short("expiry_month")
     val expiryYear = short("expiry_year")
+    val cvv = varchar("cvv", 3)
     val isDefault = bool("is_default").default(false)
     val createdAt = timestamp("created_at")
 
