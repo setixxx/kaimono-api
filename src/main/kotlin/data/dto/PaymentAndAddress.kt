@@ -62,19 +62,22 @@ data class CreatePaymentMethodRequest(
 data class PaymentMethodResponse(
     val id: Long,
 
+    @SerialName("payment_type")
+    val paymentType: String,
+
     @SerialName("card_number_last4")
-    val cardNumberLast4: String,
+    val cardNumberLast4: String? = null,
 
     @SerialName("card_holder_name")
-    val cardHolderName: String,
+    val cardHolderName: String? = null,
 
     @SerialName("expiry_month")
-    val expiryMonth: Short,
+    val expiryMonth: Short? = null,
 
     @SerialName("expiry_year")
-    val expiryYear: Short,
+    val expiryYear: Short? = null,
 
-    val cvv: String,
+    val cvv: String? = null,
 
     @SerialName("is_default")
     val isDefault: Boolean

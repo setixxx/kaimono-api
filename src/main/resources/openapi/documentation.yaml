@@ -1053,32 +1053,44 @@ components:
         id:
           type: integer
           format: int64
-          description: "Payment method ID"
+          description: "Payment method ID. Special ID -1 represents cash payment."
+          example: 1
+        payment_type:
+          type: string
+          enum: [ card, cash ]
+          description: "Payment method type"
+          example: "card"
         card_number_last4:
           type: string
+          nullable: true
           example: "4242"
-          description: "Last 4 digits of card number"
+          description: "Last 4 digits of card (null for cash)"
         card_holder_name:
           type: string
+          nullable: true
           example: "IVAN IVANOV"
-          description: "Name on the card"
+          description: "Card holder name (null for cash)"
         expiry_month:
           type: integer
           format: int16
+          nullable: true
           example: 12
-          description: "Card expiry month"
+          description: "Card expiry month (null for cash)"
         expiry_year:
           type: integer
           format: int16
+          nullable: true
           example: 2026
-          description: "Card expiry year"
+          description: "Card expiry year (null for cash)"
         cvv:
           type: string
+          nullable: true
           example: "123"
-          description: "Card security code"
+          description: "Card security code (null for cash)"
         is_default:
           type: boolean
-          description: "Is this the default payment method"
+          description: "Is this the default payment method. Cash is default if no card methods exist or none are marked as default."
+          example: false
 
     ProductListResponse:
       type: object
@@ -1241,16 +1253,19 @@ components:
           type: integer
           format: int64
           description: "Delivery address ID"
+          example: 1
         payment_method_id:
           type: integer
           format: int64
           nullable: true
-          description: "Payment method ID (required for card payments)"
+          description: "Payment method ID. Use -1 for cash payment, or actual card ID for card payment. Required only for card payments."
+          example: 1
         payment_type:
           type: string
           enum: [card, cash]
           default: card
           description: "Payment type: 'card' or 'cash'"
+          example: "card"
 
     OrderResponse:
       type: object

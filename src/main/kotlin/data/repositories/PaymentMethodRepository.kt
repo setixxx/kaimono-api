@@ -67,6 +67,12 @@ class PaymentMethodRepository {
         }
     }
 
+    suspend fun unsetAllDefaultPaymentMethods(userId: Long): Int = dbQuery {
+        PaymentMethods.update({ PaymentMethods.userId eq userId }) {
+            it[PaymentMethods.isDefault] = false
+        }
+    }
+
     suspend fun deletePaymentMethod(id: Long, userId: Long): Int = dbQuery {
         PaymentMethods.deleteWhere { (PaymentMethods.id eq id) and (PaymentMethods.userId eq userId) }
     }

@@ -37,8 +37,16 @@ class OrderService(
             val paymentMethodId = request.paymentMethodId
                 ?: throw IllegalArgumentException("Payment method required for card payment")
 
+            if (paymentMethodId == PaymentMethodService.CASH_PAYMENT_METHOD_ID) {
+                throw IllegalArgumentException("Invalid payment method for card payment")
+            }
+
             val paymentMethod = paymentMethodRepository.findPaymentMethodById(paymentMethodId, user.id)
                 ?: throw IllegalArgumentException("Payment method not found")
+        } else {
+            if (request.paymentMethodId != null && request.paymentMethodId != PaymentMethodService.CASH_PAYMENT_METHOD_ID) {
+                throw IllegalArgumentException("Invalid payment method for cash payment")
+            }
         }
 
         val cart = cartRepository.findOrCreateCart(user.id)
@@ -99,11 +107,17 @@ class OrderService(
             orderRepository.decreaseProductStock(sizeId, quantity)
         }
 
+        val actualPaymentMethodId = if (request.paymentType == "card") {
+            request.paymentMethodId
+        } else {
+            null
+        }
+
         val paidAt = if (request.paymentType == "card") Instant.now() else null
 
         paymentRepository.createPayment(
             orderId = order.id,
-            paymentMethodId = request.paymentMethodId,
+            paymentMethodId = actualPaymentMethodId,
             amount = totalAmount,
             status = "completed",
             paidAt = paidAt

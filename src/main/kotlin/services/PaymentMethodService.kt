@@ -12,6 +12,10 @@ class PaymentMethodService(
     private val userRepository: UserRepository
 ) {
 
+    companion object {
+        const val CASH_PAYMENT_METHOD_ID = -1L
+    }
+
     suspend fun createPaymentMethod(
         userPublicId: String,
         request: CreatePaymentMethodRequest
@@ -59,6 +63,7 @@ class PaymentMethodService(
 
         return PaymentMethodResponse(
             id = paymentMethod.id,
+            paymentType = "card",
             cardNumberLast4 = paymentMethod.cardNumberLast4,
             cardHolderName = paymentMethod.cardHolderName,
             expiryMonth = paymentMethod.expiryMonth,
@@ -72,11 +77,23 @@ class PaymentMethodService(
         val user = userRepository.findByPublicId(UUID.fromString(userPublicId))
             ?: throw IllegalArgumentException("User not found")
 
-        val paymentMethods = paymentMethodRepository.findPaymentMethodsByUserId(user.id)
+        val cardMethods = paymentMethodRepository.findPaymentMethodsByUserId(user.id)
 
-        return paymentMethods.map { method ->
+        val cashMethod = PaymentMethodResponse(
+            id = CASH_PAYMENT_METHOD_ID,
+            paymentType = "cash",
+            cardNumberLast4 = null,
+            cardHolderName = null,
+            expiryMonth = null,
+            expiryYear = null,
+            cvv = null,
+            isDefault = cardMethods.isEmpty() || cardMethods.none { it.isDefault }
+        )
+
+        val cardMethodResponses = cardMethods.map { method ->
             PaymentMethodResponse(
                 id = method.id,
+                paymentType = "card",
                 cardNumberLast4 = method.cardNumberLast4,
                 cardHolderName = method.cardHolderName,
                 expiryMonth = method.expiryMonth,
@@ -85,6 +102,8 @@ class PaymentMethodService(
                 isDefault = method.isDefault
             )
         }
+
+        return listOf(cashMethod) + cardMethodResponses
     }
 
     suspend fun setDefaultPaymentMethod(
@@ -93,6 +112,21 @@ class PaymentMethodService(
     ): PaymentMethodResponse {
         val user = userRepository.findByPublicId(UUID.fromString(userPublicId))
             ?: throw IllegalArgumentException("User not found")
+
+        if (paymentMethodId == CASH_PAYMENT_METHOD_ID) {
+            paymentMethodRepository.unsetAllDefaultPaymentMethods(user.id)
+
+            return PaymentMethodResponse(
+                id = CASH_PAYMENT_METHOD_ID,
+                paymentType = "cash",
+                cardNumberLast4 = null,
+                cardHolderName = null,
+                expiryMonth = null,
+                expiryYear = null,
+                cvv = null,
+                isDefault = true
+            )
+        }
 
         val updated = paymentMethodRepository.setDefaultPaymentMethod(paymentMethodId, user.id)
 
@@ -105,6 +139,7 @@ class PaymentMethodService(
 
         return PaymentMethodResponse(
             id = updatedMethod.id,
+            paymentType = "card",
             cardNumberLast4 = updatedMethod.cardNumberLast4,
             cardHolderName = updatedMethod.cardHolderName,
             expiryMonth = updatedMethod.expiryMonth,
@@ -120,6 +155,10 @@ class PaymentMethodService(
     ) {
         val user = userRepository.findByPublicId(UUID.fromString(userPublicId))
             ?: throw IllegalArgumentException("User not found")
+
+        if (paymentMethodId == CASH_PAYMENT_METHOD_ID) {
+            throw IllegalArgumentException("Cannot delete cash payment method")
+        }
 
         val deleted = paymentMethodRepository.deletePaymentMethod(paymentMethodId, user.id)
 
