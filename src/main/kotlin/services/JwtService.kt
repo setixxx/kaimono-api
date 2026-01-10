@@ -9,7 +9,6 @@ import setixx.software.data.dto.LoginResponse
 import setixx.software.data.dto.LoginUserRequest
 import setixx.software.data.repositories.JwtRepository
 import setixx.software.data.repositories.UserRepository
-import setixx.software.data.tables.Tokens.deviceInfo
 import setixx.software.models.Token
 import setixx.software.models.User
 import java.time.Instant
@@ -132,10 +131,10 @@ class JwtService(
             throw IllegalArgumentException("Refresh token expired")
         }
 
-        jwtRepository.deleteToken(refreshToken)
-
         val newAccessToken = createAccessToken(foundUser.publicId)
         val newRefreshToken = createRefreshTokenAndSave(foundUser.id, foundUser.publicId, deviceInfo)
+
+        jwtRepository.deleteToken(refreshToken)
 
         return LoginResponse(
             accessToken = newAccessToken,

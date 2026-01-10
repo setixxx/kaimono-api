@@ -6,7 +6,13 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class CreateOrderRequest(
     @SerialName("address_id")
-    val addressId: Long
+    val addressId: Long,
+
+    @SerialName("payment_method_id")
+    val paymentMethodId: Long? = null,
+
+    @SerialName("payment_type")
+    val paymentType: String = "card"
 )
 
 @Serializable
@@ -25,7 +31,10 @@ data class OrderResponse(
     val items: List<OrderItemResponse>,
 
     @SerialName("delivery_info")
-    val deliveryInfo: DeliveryResponse?
+    val deliveryInfo: DeliveryResponse?,
+
+    @SerialName("payment_info")
+    val paymentInfo: PaymentInfoResponse?
 )
 
 @Serializable
@@ -53,6 +62,34 @@ data class DeliveryResponse(
     val estimatedDate: String?,
 
     val address: AddressResponse
+)
+
+@Serializable
+data class PaymentInfoResponse(
+    val id: Long,
+    val amount: String,
+    val status: String,
+
+    @SerialName("payment_type")
+    val paymentType: String,
+
+    @SerialName("transaction_id")
+    val transactionId: String?,
+
+    @SerialName("paid_at")
+    val paidAt: String?,
+
+    @SerialName("payment_method")
+    val paymentMethod: PaymentMethodInfoResponse?
+)
+
+@Serializable
+data class PaymentMethodInfoResponse(
+    @SerialName("card_number_last4")
+    val cardNumberLast4: String,
+
+    @SerialName("card_holder_name")
+    val cardHolderName: String
 )
 
 @Serializable

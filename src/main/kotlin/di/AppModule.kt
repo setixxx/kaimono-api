@@ -8,6 +8,7 @@ import setixx.software.data.repositories.DeliveryRepository
 import setixx.software.data.repositories.JwtRepository
 import setixx.software.data.repositories.OrderRepository
 import setixx.software.data.repositories.PaymentMethodRepository
+import setixx.software.data.repositories.PaymentRepository
 import setixx.software.data.repositories.ProductRepository
 import setixx.software.data.repositories.ReviewRepository
 import setixx.software.data.repositories.UserRepository
@@ -27,6 +28,7 @@ val appModule = module {
     single { JwtRepository() }
     single { AddressRepository() }
     single { PaymentMethodRepository() }
+    single { PaymentRepository() }
     single { CartRepository() }
     single { ProductRepository() }
     single { OrderRepository() }
@@ -39,7 +41,7 @@ val appModule = module {
     single { AddressService(get(), get()) }
     single { PaymentMethodService(get(), get()) }
     single { CartService(get(), get(), get()) }
-    single { OrderService(get(), get(), get(), get(), get(), get()) }
+    single { OrderService(get(), get(), get(), get(), get(), get(), get(), get()) }
     single { ReviewService(get(), get(), get(), get()) }
     single { WishlistService(get(), get(), get()) }
     single { ProductSearchService(get()) }

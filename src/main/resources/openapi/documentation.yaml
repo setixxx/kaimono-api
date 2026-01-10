@@ -825,7 +825,6 @@ paths:
         "401":
           description: "Unauthorized"
 
-# ==================== COMPONENTS ====================
 components:
   securitySchemes:
     bearerAuth:
@@ -834,7 +833,6 @@ components:
       bearerFormat: JWT
 
   schemas:
-    # ==================== AUTH SCHEMAS ====================
     RegisterUserRequest:
       type: object
       required:
@@ -886,7 +884,6 @@ components:
           type: string
           nullable: true
 
-    # ==================== USER SCHEMAS ====================
     UpdatePasswordRequest:
       type: object
       required:
@@ -956,7 +953,6 @@ components:
         gender:
           type: string
 
-    # ==================== ADDRESS SCHEMAS ====================
     CreateAddressRequest:
       type: object
       required:
@@ -1012,7 +1008,6 @@ components:
         is_default:
           type: boolean
 
-    # ==================== PAYMENT METHOD SCHEMAS ====================
     CreatePaymentMethodRequest:
       type: object
       required:
@@ -1085,7 +1080,6 @@ components:
           type: boolean
           description: "Is this the default payment method"
 
-    # ==================== PRODUCT SCHEMAS ====================
     ProductListResponse:
       type: object
       properties:
@@ -1176,7 +1170,6 @@ components:
         display_order:
           type: integer
 
-    # ==================== CART SCHEMAS ====================
     AddToCartRequest:
       type: object
       required:
@@ -1239,7 +1232,6 @@ components:
         subtotal:
           type: string
 
-    # ==================== ORDER SCHEMAS ====================
     CreateOrderRequest:
       type: object
       required:
@@ -1248,6 +1240,17 @@ components:
         address_id:
           type: integer
           format: int64
+          description: "Delivery address ID"
+        payment_method_id:
+          type: integer
+          format: int64
+          nullable: true
+          description: "Payment method ID (required for card payments)"
+        payment_type:
+          type: string
+          enum: [card, cash]
+          default: card
+          description: "Payment type: 'card' or 'cash'"
 
     OrderResponse:
       type: object
@@ -1268,6 +1271,9 @@ components:
             $ref: "#/components/schemas/OrderItemResponse"
         delivery_info:
           $ref: "#/components/schemas/DeliveryResponse"
+          nullable: true
+        payment_info:
+          $ref: "#/components/schemas/PaymentInfoResponse"
           nullable: true
 
     OrderItemResponse:
@@ -1299,7 +1305,50 @@ components:
         address:
           $ref: "#/components/schemas/AddressResponse"
 
-    # ==================== REVIEW SCHEMAS ====================
+    PaymentInfoResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: "Payment ID"
+        amount:
+          type: string
+          example: "5997.00"
+          description: "Payment amount"
+        status:
+          type: string
+          example: "completed"
+          description: "Payment status"
+        payment_type:
+          type: string
+          enum: [card, cash]
+          description: "Payment type"
+        transaction_id:
+          type: string
+          nullable: true
+          description: "Transaction ID"
+        paid_at:
+          type: string
+          format: date-time
+          nullable: true
+          description: "Payment date (null for cash payments)"
+        payment_method:
+          $ref: "#/components/schemas/PaymentMethodInfoResponse"
+          nullable: true
+
+    PaymentMethodInfoResponse:
+      type: object
+      properties:
+        card_number_last4:
+          type: string
+          example: "4242"
+          description: "Last 4 digits of card"
+        card_holder_name:
+          type: string
+          example: "IVAN IVANOV"
+          description: "Card holder name"
+
     CreateReviewRequest:
       type: object
       required:
@@ -1353,7 +1402,6 @@ components:
           type: string
           format: date-time
 
-    # ==================== WISHLIST SCHEMAS ====================
     AddToWishlistRequest:
       type: object
       required:

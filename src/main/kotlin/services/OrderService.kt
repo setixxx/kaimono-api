@@ -4,6 +4,7 @@ import setixx.software.data.dto.*
 import setixx.software.data.repositories.*
 import setixx.software.utils.dbQuery
 import java.math.BigDecimal
+import java.time.Instant
 import java.time.LocalDate
 import java.util.UUID
 
@@ -13,7 +14,9 @@ class OrderService(
     private val productRepository: ProductRepository,
     private val addressRepository: AddressRepository,
     private val deliveryRepository: DeliveryRepository,
-    private val userRepository: UserRepository
+    private val userRepository: UserRepository,
+    private val paymentRepository: PaymentRepository,
+    private val paymentMethodRepository: PaymentMethodRepository
 ) {
 
     suspend fun createOrder(
@@ -25,6 +28,18 @@ class OrderService(
 
         val address = addressRepository.findAddressById(request.addressId, user.id)
             ?: throw IllegalArgumentException("Address not found")
+
+        if (request.paymentType !in listOf("card", "cash")) {
+            throw IllegalArgumentException("Invalid payment type. Must be 'card' or 'cash'")
+        }
+
+        if (request.paymentType == "card") {
+            val paymentMethodId = request.paymentMethodId
+                ?: throw IllegalArgumentException("Payment method required for card payment")
+
+            val paymentMethod = paymentMethodRepository.findPaymentMethodById(paymentMethodId, user.id)
+                ?: throw IllegalArgumentException("Payment method not found")
+        }
 
         val cart = cartRepository.findOrCreateCart(user.id)
         val cartItems = cartRepository.getCartItems(cart.id)
@@ -84,6 +99,16 @@ class OrderService(
             orderRepository.decreaseProductStock(sizeId, quantity)
         }
 
+        val paidAt = if (request.paymentType == "card") Instant.now() else null
+
+        paymentRepository.createPayment(
+            orderId = order.id,
+            paymentMethodId = request.paymentMethodId,
+            amount = totalAmount,
+            status = "completed",
+            paidAt = paidAt
+        )
+
         val estimatedDate = LocalDate.now().plusDays(7)
         val delivery = deliveryRepository.createDelivery(
             orderId = order.id,
@@ -136,6 +161,8 @@ class OrderService(
         val delivery = deliveryRepository.findDeliveryByOrderId(order.id)
         val address = delivery?.let { addressRepository.findAddressById(it.addressId, order.userId) }
 
+        val payment = paymentRepository.findPaymentByOrderId(order.id)
+
         val items = orderItems.map { item ->
             val product = productRepository.findProductById(item.productId)
                 ?: throw IllegalArgumentException("Product not found")
@@ -170,13 +197,38 @@ class OrderService(
             )
         } else null
 
+        val paymentInfo = payment?.let {
+            val paymentMethodInfo = it.paymentMethodId?.let { methodId ->
+                val paymentMethod = paymentMethodRepository.findPaymentMethodById(methodId, order.userId)
+                paymentMethod?.let { pm ->
+                    PaymentMethodInfoResponse(
+                        cardNumberLast4 = pm.cardNumberLast4,
+                        cardHolderName = pm.cardHolderName
+                    )
+                }
+            }
+
+            val paymentType = if (it.paymentMethodId != null) "card" else "cash"
+
+            PaymentInfoResponse(
+                id = it.id,
+                amount = it.amount.toString(),
+                status = it.status,
+                paymentType = paymentType,
+                transactionId = it.transactionId,
+                paidAt = it.paidAt?.toString(),
+                paymentMethod = paymentMethodInfo
+            )
+        }
+
         return OrderResponse(
             publicId = order.publicId.toString(),
             status = orderStatus.name,
             totalAmount = order.totalAmount.toString(),
             createdAt = order.createdAt.toString(),
             items = items,
-            deliveryInfo = deliveryInfo
+            deliveryInfo = deliveryInfo,
+            paymentInfo = paymentInfo
         )
     }
 }
