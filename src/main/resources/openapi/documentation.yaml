@@ -1137,6 +1137,19 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/ProductImageResponse"
+        average_rating:
+          type: number
+          format: double
+          nullable: true
+          minimum: 1
+          maximum: 5
+          description: "Average rating from reviews (1-5), null if no reviews"
+          example: 4.5
+        review_count:
+          type: integer
+          format: int64
+          description: "Total number of reviews"
+          example: 42
 
     CategoryResponse:
       type: object

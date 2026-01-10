@@ -6,12 +6,14 @@ import setixx.software.data.tables.ProductCategories
 import setixx.software.data.tables.ProductImages
 import setixx.software.data.tables.ProductSizes
 import setixx.software.data.tables.Products
+import setixx.software.data.tables.Reviews
 import setixx.software.models.Category
 import setixx.software.models.Product
 import setixx.software.models.ProductImage
 import setixx.software.models.ProductSize
 import setixx.software.utils.dbQuery
 import java.math.BigDecimal
+import java.math.RoundingMode
 import java.util.UUID
 
 class ProductRepository {
@@ -61,6 +63,21 @@ class ProductRepository {
                 .limit(1)
                 .map { it[ProductImages.imageUrl] }
                 .singleOrNull()
+    }
+
+    suspend fun getProductAverageRating(productId: Long): BigDecimal? = dbQuery {
+        Reviews
+            .select(Reviews.rating.avg())
+            .where { Reviews.productId eq productId }
+            .map { it[Reviews.rating.avg()] }
+            .singleOrNull()
+            ?.setScale(1, RoundingMode.HALF_UP)
+    }
+
+    suspend fun getProductReviewCount(productId: Long): Long = dbQuery {
+        Reviews.selectAll()
+            .where { Reviews.productId eq productId }
+            .count()
     }
 
     suspend fun searchProducts(

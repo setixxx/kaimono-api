@@ -71,6 +71,8 @@ class ProductSearchService(
         val sizes = productRepository.findProductSizesByProductId(product.id)
         val images = productRepository.findProductImagesByProductId(product.id)
         val categories = productRepository.findCategoriesByProductId(product.id)
+        val averageRating = productRepository.getProductAverageRating(product.id)
+        val reviewCount = productRepository.getProductReviewCount(product.id)
 
         return ProductResponse(
             id = product.id,
@@ -102,7 +104,9 @@ class ProductSearchService(
                     isPrimary = image.isPrimary ?: false,
                     displayOrder = image.displayOrder ?: 0
                 )
-            }
+            },
+            averageRating = averageRating?.toDouble(),
+            reviewCount = reviewCount
         )
     }
 }

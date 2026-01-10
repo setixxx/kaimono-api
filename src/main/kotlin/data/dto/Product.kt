@@ -78,7 +78,13 @@ data class ProductResponse(
 
     val categories: List<CategoryResponse>,
     val sizes: List<ProductSizeResponse>,
-    val images: List<ProductImageResponse>
+    val images: List<ProductImageResponse>,
+
+    @SerialName("average_rating")
+    val averageRating: Double?,
+
+    @SerialName("review_count")
+    val reviewCount: Long
 )
 
 @Serializable
