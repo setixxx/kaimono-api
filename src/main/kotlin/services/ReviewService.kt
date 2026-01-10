@@ -2,6 +2,7 @@ package setixx.software.services
 
 import setixx.software.data.dto.CreateReviewRequest
 import setixx.software.data.dto.ReviewResponse
+import setixx.software.data.dto.UpdateReviewRequest
 import setixx.software.data.repositories.*
 import setixx.software.utils.dbQuery
 import java.util.UUID
@@ -84,12 +85,20 @@ class ReviewService(
         val reviews = reviewRepository.findReviewsByUserId(user.id)
 
         return reviews.map { review ->
+            val product = productRepository.findProductById(review.productId)
+                ?: throw IllegalArgumentException("Product not found")
+
+            val imageUrl = productRepository.getPrimaryImageUrl(product.id)
+
             ReviewResponse(
                 id = review.id,
                 userName = user.name,
                 rating = review.rating,
                 comment = review.comment,
-                createdAt = review.createdAt.toString()
+                createdAt = review.createdAt.toString(),
+                productPublicId = product.publicId.toString(),
+                productName = product.name,
+                productImage = imageUrl
             )
         }
     }
@@ -97,7 +106,7 @@ class ReviewService(
     suspend fun updateReview(
         userPublicId: String,
         reviewId: Long,
-        request: setixx.software.data.dto.UpdateReviewRequest
+        request: UpdateReviewRequest
     ): ReviewResponse {
         val user = userRepository.findByPublicId(UUID.fromString(userPublicId))
             ?: throw IllegalArgumentException("User not found")
@@ -109,7 +118,7 @@ class ReviewService(
             throw IllegalArgumentException("Access denied")
         }
 
-        request.rating?.let {
+        request.rating.let {
             if (it !in 1..5) {
                 throw IllegalArgumentException("Rating must be between 1 and 5")
             }

@@ -26,12 +26,21 @@ data class ReviewResponse(
     val comment: String?,
 
     @SerialName("created_at")
-    val createdAt: String
+    val createdAt: String,
+
+    @SerialName("product_public_id")
+    val productPublicId: String? = null,
+
+    @SerialName("product_name")
+    val productName: String? = null,
+
+    @SerialName("product_image")
+    val productImage: String? = null
 )
 
 @Serializable
 data class UpdateReviewRequest(
-    val rating: Short? = null,
+    val rating: Short,
     val comment: String? = null
 )
 

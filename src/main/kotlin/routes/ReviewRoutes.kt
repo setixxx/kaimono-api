@@ -9,6 +9,7 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import org.koin.ktor.ext.inject
 import setixx.software.data.dto.CreateReviewRequest
+import setixx.software.data.dto.UpdateReviewRequest
 import setixx.software.services.ReviewService
 
 private suspend fun ApplicationCall.getPublicIdFromAccessToken(): String? {
@@ -81,7 +82,7 @@ fun Route.reviewRoutes() {
             }
 
             val request = try {
-                call.receive<setixx.software.data.dto.UpdateReviewRequest>()
+                call.receive<UpdateReviewRequest>()
             } catch (e: Exception) {
                 call.respond(HttpStatusCode.BadRequest, "Invalid request body")
                 return@patch
