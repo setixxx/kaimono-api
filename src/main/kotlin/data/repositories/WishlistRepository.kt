@@ -11,8 +11,7 @@ class WishlistRepository {
 
     suspend fun addToWishlist(
         userId: Long,
-        productId: Long,
-        productSizeId: Long?
+        productId: Long
     ): WishlistItem = dbQuery {
         val now = Instant.now()
 
@@ -22,19 +21,12 @@ class WishlistRepository {
             .singleOrNull()
 
         if (existing != null) {
-            Wishlist.update({
-                (Wishlist.userId eq userId) and (Wishlist.productId eq productId)
-            }) {
-                it[Wishlist.productSizeId] = productSizeId
-            }
-
-            return@dbQuery existing.copy(productSizeId = productSizeId)
+            return@dbQuery existing
         }
 
         val insertStatement = Wishlist.insert {
             it[Wishlist.userId] = userId
             it[Wishlist.productId] = productId
-            it[Wishlist.productSizeId] = productSizeId
             it[Wishlist.addedAt] = now
         }
 
@@ -42,7 +34,6 @@ class WishlistRepository {
             id = insertStatement[Wishlist.id],
             userId = userId,
             productId = productId,
-            productSizeId = productSizeId,
             addedAt = now
         )
     }
@@ -61,18 +52,6 @@ class WishlistRepository {
             .singleOrNull()
     }
 
-    suspend fun updateWishlistItemSize(
-        id: Long,
-        userId: Long,
-        productSizeId: Long?
-    ): Int = dbQuery {
-        Wishlist.update({
-            (Wishlist.id eq id) and (Wishlist.userId eq userId)
-        }) {
-            it[Wishlist.productSizeId] = productSizeId
-        }
-    }
-
     suspend fun removeFromWishlist(id: Long, userId: Long): Int = dbQuery {
         Wishlist.deleteWhere {
             (Wishlist.id eq id) and (Wishlist.userId eq userId)
@@ -88,7 +67,6 @@ class WishlistRepository {
             id = row[Wishlist.id],
             userId = row[Wishlist.userId],
             productId = row[Wishlist.productId],
-            productSizeId = row[Wishlist.productSizeId],
             addedAt = row[Wishlist.addedAt]
         )
     }

@@ -22,17 +22,9 @@ class WishlistService(
         val product = productRepository.findProductByPublicId(UUID.fromString(request.productPublicId))
             ?: throw IllegalArgumentException("Product not found")
 
-        val productSize = productRepository.findProductSizeById(request.productSizeId)
-            ?: throw IllegalArgumentException("Product size not found")
-
-        if (productSize.productId != product.id) {
-            throw IllegalArgumentException("Product size does not belong to this product")
-        }
-
         wishlistRepository.addToWishlist(
             userId = user.id,
-            productId = product.id,
-            productSizeId = request.productSizeId
+            productId = product.id
         )
 
         return getWishlist(userPublicId)
@@ -51,10 +43,6 @@ class WishlistService(
             val imageUrl = productRepository.getPrimaryImageUrl(product.id)
 
             val availableSizes = productRepository.findProductSizesByProductId(product.id)
-
-            val selectedSize = wishlistItem.productSizeId?.let { sizeId ->
-                productRepository.findProductSizeById(sizeId)
-            }
 
             val sizesInfo = availableSizes.map { size ->
                 val finalPrice = product.basePrice + size.priceModifier
@@ -75,45 +63,12 @@ class WishlistService(
                 productImage = imageUrl,
                 basePrice = product.basePrice.toString(),
                 isAvailable = product.isAvailable,
-                selectedSizeId = selectedSize?.id,
-                selectedSize = selectedSize?.size,
                 availableSizes = sizesInfo,
                 addedAt = wishlistItem.addedAt.toString()
             )
         }
 
         return WishlistResponse(items = items)
-    }
-
-    suspend fun updateWishlistItemSize(
-        userPublicId: String,
-        wishlistItemId: Long,
-        request: UpdateWishlistItemRequest
-    ): WishlistResponse {
-        val user = userRepository.findByPublicId(UUID.fromString(userPublicId))
-            ?: throw IllegalArgumentException("User not found")
-
-        val wishlistItem = wishlistRepository.findWishlistItemById(wishlistItemId, user.id)
-            ?: throw IllegalArgumentException("Wishlist item not found")
-
-        val productSize = productRepository.findProductSizeById(request.productSizeId)
-            ?: throw IllegalArgumentException("Product size not found")
-
-        if (productSize.productId != wishlistItem.productId) {
-            throw IllegalArgumentException("Product size does not belong to this product")
-        }
-
-        val updated = wishlistRepository.updateWishlistItemSize(
-            id = wishlistItemId,
-            userId = user.id,
-            productSizeId = request.productSizeId
-        )
-
-        if (updated == 0) {
-            throw IllegalArgumentException("Failed to update wishlist item")
-        }
-
-        return getWishlist(userPublicId)
     }
 
     suspend fun removeFromWishlist(

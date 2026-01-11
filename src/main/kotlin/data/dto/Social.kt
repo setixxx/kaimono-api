@@ -47,15 +47,7 @@ data class UpdateReviewRequest(
 @Serializable
 data class AddToWishlistRequest(
     @SerialName("product_public_id")
-    val productPublicId: String,
-    @SerialName("product_size_id")
-    val productSizeId: Long
-)
-
-@Serializable
-data class UpdateWishlistItemRequest(
-    @SerialName("product_size_id")
-    val productSizeId: Long
+    val productPublicId: String
 )
 
 @Serializable
@@ -84,12 +76,6 @@ data class WishlistItemResponse(
 
     @SerialName("is_available")
     val isAvailable: Boolean,
-
-    @SerialName("selected_size_id")
-    val selectedSizeId: Long?,
-
-    @SerialName("selected_size")
-    val selectedSize: String?,
 
     @SerialName("available_sizes")
     val availableSizes: List<ProductSizeInfo>,

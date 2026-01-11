@@ -249,14 +249,14 @@ INSERT INTO reviews (user_id, product_id, order_id, rating, comment, created_at,
 (2, 8, 2, 5, 'Шёлк натуральный, блузка смотрится дорого. Рекомендую!', NOW() - INTERVAL '7 days', NOW() - INTERVAL '7 days');
 
 -- 16. WISHLIST (add items to wishlist for users) - ИСПРАВЛЕН product_size_id
-INSERT INTO wishlist (user_id, product_id, product_size_id, added_at) VALUES
-(1, 7, 34, NOW() - INTERVAL '10 days'), -- User 1 wants Black Evening Dress (Size M - ID 34)
-(1, 11, 60, NOW() - INTERVAL '5 days'), -- User 1 wants Leather Boots (Size 41 - ID 60)
-(2, 10, 53, NOW() - INTERVAL '7 days'), -- User 2 wants Adidas Ultraboost (Size 41 - ID 53)
-(3, 13, 69, NOW() - INTERVAL '12 days'), -- User 3 wants Leather Bag (ONE SIZE - ID 69)
-(3, 15, 71, NOW() - INTERVAL '8 days'), -- User 3 wants Casio Watch (ONE SIZE - ID 71)
-(4, 1, 3, NOW() - INTERVAL '6 days'), -- User 4 wants White T-shirt (Size M - ID 3)
-(5, 4, 19, NOW() - INTERVAL '3 days'); -- User 5 wants Blue Jeans (Size 32 - ID 19)
+INSERT INTO wishlist (user_id, product_id, added_at) VALUES
+(1, 7, NOW() - INTERVAL '10 days'), -- User 1 wants Black Evening Dress (Size M - ID 34)
+(1, 11, NOW() - INTERVAL '5 days'), -- User 1 wants Leather Boots (Size 41 - ID 60)
+(2, 10, NOW() - INTERVAL '7 days'), -- User 2 wants Adidas Ultraboost (Size 41 - ID 53)
+(3, 13, NOW() - INTERVAL '12 days'), -- User 3 wants Leather Bag (ONE SIZE - ID 69)
+(3, 15, NOW() - INTERVAL '8 days'), -- User 3 wants Casio Watch (ONE SIZE - ID 71)
+(4, 1, NOW() - INTERVAL '6 days'), -- User 4 wants White T-shirt (Size M - ID 3)
+(5, 4, NOW() - INTERVAL '3 days'); -- User 5 wants Blue Jeans (Size 32 - ID 19)
 
 -- =====================================================
 -- Verification Queries (commented out, use for testing)

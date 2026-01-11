@@ -823,36 +823,6 @@ paths:
         "401":
           description: "Unauthorized"
 
-  /wishlist/{id}/size:
-    patch:
-      tags:
-        - Wishlist
-      summary: "Update wishlist item size"
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: integer
-            format: int64
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/UpdateWishlistItemRequest"
-      responses:
-        "200":
-          description: "Wishlist item updated"
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/WishlistResponse"
-        "400":
-          description: "Invalid data"
-        "401":
-          description: "Unauthorized"
-
   /wishlist/{id}:
     delete:
       tags:
@@ -1486,23 +1456,10 @@ components:
       type: object
       required:
         - product_public_id
-        - product_size_id
       properties:
         product_public_id:
           type: string
           format: uuid
-        product_size_id:
-          type: integer
-          format: int64
-
-    UpdateWishlistItemRequest:
-      type: object
-      required:
-        - product_size_id
-      properties:
-        product_size_id:
-          type: integer
-          format: int64
 
     WishlistResponse:
       type: object
@@ -1532,13 +1489,6 @@ components:
           type: string
         is_available:
           type: boolean
-        selected_size_id:
-          type: integer
-          format: int64
-          nullable: true
-        selected_size:
-          type: string
-          nullable: true
         available_sizes:
           type: array
           items:

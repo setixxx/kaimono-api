@@ -9,7 +9,6 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import org.koin.ktor.ext.inject
 import setixx.software.data.dto.AddToWishlistRequest
-import setixx.software.data.dto.UpdateWishlistItemRequest
 import setixx.software.services.WishlistService
 
 private suspend fun ApplicationCall.getPublicIdFromAccessToken(): String? {
@@ -70,33 +69,6 @@ fun Route.wishlistRoutes() {
                 call.respond(HttpStatusCode.BadRequest, e.message ?: "Invalid data")
             } catch (e: Exception) {
                 call.respond(HttpStatusCode.InternalServerError, "Failed to add to wishlist: ${e.message}")
-                e.printStackTrace()
-            }
-        }
-
-        patch("/{id}/size") {
-            val wishlistItemId = call.parameters["id"]?.toLongOrNull()
-            if (wishlistItemId == null) {
-                call.respond(HttpStatusCode.BadRequest, "Invalid wishlist item ID")
-                return@patch
-            }
-
-            val request = try {
-                call.receive<UpdateWishlistItemRequest>()
-            } catch (e: Exception) {
-                call.respond(HttpStatusCode.BadRequest, "Invalid request body. ${e.localizedMessage}")
-                return@patch
-            }
-
-            try {
-                val publicId = call.getPublicIdFromAccessToken() ?: return@patch
-
-                val wishlist = wishlistService.updateWishlistItemSize(publicId, wishlistItemId, request)
-                call.respond(HttpStatusCode.OK, wishlist)
-            } catch (e: IllegalArgumentException) {
-                call.respond(HttpStatusCode.BadRequest, e.message ?: "Invalid data")
-            } catch (e: Exception) {
-                call.respond(HttpStatusCode.InternalServerError, "Failed to update wishlist item: ${e.message}")
                 e.printStackTrace()
             }
         }
