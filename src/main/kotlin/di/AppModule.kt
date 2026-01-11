@@ -4,6 +4,7 @@ import io.ktor.server.application.Application
 import org.koin.dsl.module
 import setixx.software.data.repositories.AddressRepository
 import setixx.software.data.repositories.CartRepository
+import setixx.software.data.repositories.CategoryRepository
 import setixx.software.data.repositories.DeliveryRepository
 import setixx.software.data.repositories.JwtRepository
 import setixx.software.data.repositories.OrderRepository
@@ -15,6 +16,7 @@ import setixx.software.data.repositories.UserRepository
 import setixx.software.data.repositories.WishlistRepository
 import setixx.software.services.AddressService
 import setixx.software.services.CartService
+import setixx.software.services.CategoryService
 import setixx.software.services.JwtService
 import setixx.software.services.OrderService
 import setixx.software.services.PaymentMethodService
@@ -35,6 +37,7 @@ val appModule = module {
     single { DeliveryRepository() }
     single { ReviewRepository() }
     single { WishlistRepository() }
+    single { CategoryRepository() }
 
     single { UserService(get()) }
     single { JwtService(get(), get(), get(), get()) }
@@ -45,4 +48,5 @@ val appModule = module {
     single { ReviewService(get(), get(), get(), get()) }
     single { WishlistService(get(), get(), get()) }
     single { ProductSearchService(get()) }
+    single { CategoryService(get()) }
 }

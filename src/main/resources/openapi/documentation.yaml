@@ -340,6 +340,58 @@ paths:
         "401":
           description: "Unauthorized"
 
+    # ==================== CATEGORY ROUTES ====================
+  /categories:
+    get:
+      tags:
+        - Categories
+      summary: "Get all categories"
+      parameters:
+        - name: parent_id
+          in: query
+          schema:
+            type: integer
+            format: int64
+          required: false
+          description: "Filter categories by parent ID"
+      responses:
+        "200":
+          description: "List of categories"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CategoryResponse"
+        "500":
+          description: "Internal server error"
+
+  /categories/{id}:
+    get:
+      tags:
+        - Categories
+      summary: "Get category by ID"
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        "200":
+          description: "Category details"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CategoryResponse"
+        "400":
+          description: "Invalid category ID"
+        "404":
+          description: "Category not found"
+        "500":
+          description: "Internal server error"
+
   # ==================== PRODUCT ROUTES ====================
   /products:
     get:

@@ -12,6 +12,7 @@ import setixx.software.data.repositories.UserRepository
 import setixx.software.routes.addressRoutes
 import setixx.software.routes.authRoutes
 import setixx.software.routes.cartRoutes
+import setixx.software.routes.categoryRoutes
 import setixx.software.routes.orderRoutes
 import setixx.software.routes.paymentMethodRoutes
 import setixx.software.routes.productRoutes
@@ -36,6 +37,7 @@ fun Application.configureRouting() {
             orderRoutes()
             reviewRoutes()
             wishlistRoutes()
+            categoryRoutes()
 
             get("/") {
                 val principal = call.principal<JWTPrincipal>()
