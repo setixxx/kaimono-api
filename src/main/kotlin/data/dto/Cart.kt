@@ -16,7 +16,16 @@ data class AddToCartRequest(
 
 @Serializable
 data class UpdateCartItemRequest(
+    @SerialName("size_id")
+    val sizeId: Long,
+
     val quantity: Int
+)
+
+@Serializable
+data class RemoveFromCartRequest(
+    @SerialName("size_id")
+    val sizeId: Long
 )
 
 @Serializable
@@ -32,8 +41,8 @@ data class CartResponse(
 data class CartItemResponse(
     val id: Long,
 
-    @SerialName("product_id")
-    val productId: Long,
+    @SerialName("product_public_id")
+    val productPublicId: String,
 
     @SerialName("product_name")
     val productName: String,

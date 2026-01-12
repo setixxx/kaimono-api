@@ -81,7 +81,7 @@ class CartService(
 
             CartItemResponse(
                 id = cartItem.id,
-                productId = product.id,
+                productPublicId = product.publicId.toString(),
                 productName = product.name,
                 productImage = imageUrl,
                 size = productSize.size,
@@ -98,32 +98,39 @@ class CartService(
         )
     }
 
-    suspend fun updateCartItem(
+    suspend fun updateCartItemByProductPublicId(
         userPublicId: String,
-        cartItemId: Long,
+        productPublicId: String,
         request: UpdateCartItemRequest
     ): CartResponse {
         val user = userRepository.findByPublicId(UUID.fromString(userPublicId))
             ?: throw IllegalArgumentException("User not found")
 
+        val product = productRepository.findProductByPublicId(UUID.fromString(productPublicId))
+            ?: throw IllegalArgumentException("Product not found")
+
         val cart = cartRepository.findOrCreateCart(user.id)
 
-        val cartItem = cartRepository.findCartItemById(cartItemId, cart.id)
-            ?: throw IllegalArgumentException("Cart item not found")
+        val cartItem = cartRepository.findCartItemByProductIdAndSizeId(cart.id, product.id, request.sizeId)
+            ?: throw IllegalArgumentException("Product with specified size not found in cart")
 
         if (request.quantity <= 0) {
             throw IllegalArgumentException("Quantity must be greater than 0")
         }
 
-        val productSize = productRepository.findProductSizeById(cartItem.productSizeId)
+        val productSize = productRepository.findProductSizeById(request.sizeId)
             ?: throw IllegalArgumentException("Product size not found")
+
+        if (productSize.productId != product.id) {
+            throw IllegalArgumentException("Product size does not belong to this product")
+        }
 
         if (productSize.stockQuantity < request.quantity) {
             throw IllegalArgumentException("Not enough stock available")
         }
 
         val updated = cartRepository.updateCartItemQuantity(
-            cartItemId = cartItemId,
+            cartItemId = cartItem.id,
             cartId = cart.id,
             quantity = request.quantity
         )
@@ -135,16 +142,23 @@ class CartService(
         return getCart(userPublicId)
     }
 
-    suspend fun removeCartItem(
+    suspend fun removeCartItemByProductPublicId(
         userPublicId: String,
-        cartItemId: Long
+        productPublicId: String,
+        sizeId: Long
     ): CartResponse {
         val user = userRepository.findByPublicId(UUID.fromString(userPublicId))
             ?: throw IllegalArgumentException("User not found")
 
+        val product = productRepository.findProductByPublicId(UUID.fromString(productPublicId))
+            ?: throw IllegalArgumentException("Product not found")
+
         val cart = cartRepository.findOrCreateCart(user.id)
 
-        val deleted = cartRepository.removeCartItem(cartItemId, cart.id)
+        val cartItem = cartRepository.findCartItemByProductIdAndSizeId(cart.id, product.id, sizeId)
+            ?: throw IllegalArgumentException("Product with specified size not found in cart")
+
+        val deleted = cartRepository.removeCartItem(cartItem.id, cart.id)
 
         if (deleted == 0) {
             throw IllegalArgumentException("Cart item not found or already removed")

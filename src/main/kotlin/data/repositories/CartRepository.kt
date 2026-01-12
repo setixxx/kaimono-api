@@ -150,6 +150,24 @@ class CartRepository {
             .singleOrNull()
     }
 
+    suspend fun findCartItemByProductId(cartId: Long, productId: Long): CartItem? = dbQuery {
+        CartItems.selectAll()
+            .where { (CartItems.cartId eq cartId) and (CartItems.productId eq productId) }
+            .map { rowToCartItem(it) }
+            .singleOrNull()
+    }
+
+    suspend fun findCartItemByProductIdAndSizeId(cartId: Long, productId: Long, sizeId: Long): CartItem? = dbQuery {
+        CartItems.selectAll()
+            .where {
+                (CartItems.cartId eq cartId) and
+                        (CartItems.productId eq productId) and
+                        (CartItems.productSizeId eq sizeId)
+            }
+            .map { rowToCartItem(it) }
+            .singleOrNull()
+    }
+
     private fun rowToCart(row: ResultRow): Cart {
         return Cart(
             id = row[Carts.id],

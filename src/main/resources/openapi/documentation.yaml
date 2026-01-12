@@ -565,8 +565,8 @@ paths:
           in: path
           required: true
           schema:
-            type: integer
-            format: int64
+            type: string
+            format: uuid
       requestBody:
         required: true
         content:
@@ -594,8 +594,14 @@ paths:
           in: path
           required: true
           schema:
-            type: integer
-            format: int64
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DeleteCartItemRequest"
       responses:
         "200":
           description: "Item removed from cart"
@@ -1234,11 +1240,28 @@ components:
           type: integer
           default: 1
 
+    DeleteCartItemRequest:
+      type: object
+      required:
+        - size_id
+      properties:
+        size_id:
+          type: integer
+          format: int64
+          description: "Product size ID to identify the exact item in cart"
+          example: 3
+
     UpdateCartItemRequest:
       type: object
       required:
         - quantity
+        - size_id
       properties:
+        size_id:
+          type: integer
+          format: int64
+          description: "Product size ID to identify the exact item in cart"
+          example: 3
         quantity:
           type: integer
           minimum: 1
@@ -1263,9 +1286,9 @@ components:
         id:
           type: integer
           format: int64
-        product_id:
-          type: integer
-          format: int64
+        product_public_id:
+          type: string
+          format: uuid
         product_name:
           type: string
         product_image:

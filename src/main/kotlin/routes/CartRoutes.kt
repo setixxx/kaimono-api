@@ -9,6 +9,7 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import org.koin.ktor.ext.inject
 import setixx.software.data.dto.AddToCartRequest
+import setixx.software.data.dto.RemoveFromCartRequest
 import setixx.software.data.dto.UpdateCartItemRequest
 import setixx.software.services.CartService
 
@@ -74,10 +75,10 @@ fun Route.cartRoutes() {
             }
         }
 
-        patch("/items/{id}") {
-            val cartItemId = call.parameters["id"]?.toLongOrNull()
-            if (cartItemId == null) {
-                call.respond(HttpStatusCode.BadRequest, "Invalid cart item ID")
+        patch("/items/{publicId}") {
+            val productPublicId = call.parameters["publicId"]
+            if (productPublicId.isNullOrBlank()) {
+                call.respond(HttpStatusCode.BadRequest, "Invalid product public ID")
                 return@patch
             }
 
@@ -91,7 +92,7 @@ fun Route.cartRoutes() {
             try {
                 val publicId = call.getPublicIdFromAccessToken() ?: return@patch
 
-                val cart = cartService.updateCartItem(publicId, cartItemId, request)
+                val cart = cartService.updateCartItemByProductPublicId(publicId, productPublicId, request)
                 call.respond(HttpStatusCode.OK, cart)
             } catch (e: IllegalArgumentException) {
                 call.respond(HttpStatusCode.BadRequest, e.message ?: "Invalid data")
@@ -101,17 +102,24 @@ fun Route.cartRoutes() {
             }
         }
 
-        delete("/items/{id}") {
-            val cartItemId = call.parameters["id"]?.toLongOrNull()
-            if (cartItemId == null) {
-                call.respond(HttpStatusCode.BadRequest, "Invalid cart item ID")
+        delete("/items/{publicId}") {
+            val productPublicId = call.parameters["publicId"]
+            if (productPublicId.isNullOrBlank()) {
+                call.respond(HttpStatusCode.BadRequest, "Invalid product public ID")
+                return@delete
+            }
+
+            val request = try {
+                call.receive<RemoveFromCartRequest>()
+            } catch (e: Exception) {
+                call.respond(HttpStatusCode.BadRequest, "Invalid request body")
                 return@delete
             }
 
             try {
                 val publicId = call.getPublicIdFromAccessToken() ?: return@delete
 
-                val cart = cartService.removeCartItem(publicId, cartItemId)
+                val cart = cartService.removeCartItemByProductPublicId(publicId, productPublicId, request.sizeId)
                 call.respond(HttpStatusCode.OK, cart)
             } catch (e: IllegalArgumentException) {
                 call.respond(HttpStatusCode.BadRequest, e.message ?: "Invalid data")
