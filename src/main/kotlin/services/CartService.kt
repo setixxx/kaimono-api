@@ -30,12 +30,8 @@ class CartService(
             throw IllegalArgumentException("Product is not available")
         }
 
-        val productSize = productRepository.findProductSizeById(request.sizeId)
-            ?: throw IllegalArgumentException("Product size not found")
-
-        if (productSize.productId != product.id) {
-            throw IllegalArgumentException("Product size does not belong to this product")
-        }
+        val productSize = productRepository.findProductSizeByProductIdAndSize(product.id, request.size)
+            ?: throw IllegalArgumentException("Product size '${request.size}' not found for this product")
 
         if (productSize.stockQuantity < request.quantity) {
             throw IllegalArgumentException("Not enough stock available")
@@ -50,7 +46,7 @@ class CartService(
         cartRepository.addItemToCart(
             cartId = cart.id,
             productId = product.id,
-            productSizeId = request.sizeId,
+            productSizeId = productSize.id,
             quantity = request.quantity
         )
 
@@ -111,19 +107,15 @@ class CartService(
 
         val cart = cartRepository.findOrCreateCart(user.id)
 
-        val cartItem = cartRepository.findCartItemByProductIdAndSizeId(cart.id, product.id, request.sizeId)
-            ?: throw IllegalArgumentException("Product with specified size not found in cart")
+        val cartItem = cartRepository.findCartItemByProductIdAndSize(cart.id, product.id, request.size)
+            ?: throw IllegalArgumentException("Product with size '${request.size}' not found in cart")
 
         if (request.quantity <= 0) {
             throw IllegalArgumentException("Quantity must be greater than 0")
         }
 
-        val productSize = productRepository.findProductSizeById(request.sizeId)
-            ?: throw IllegalArgumentException("Product size not found")
-
-        if (productSize.productId != product.id) {
-            throw IllegalArgumentException("Product size does not belong to this product")
-        }
+        val productSize = productRepository.findProductSizeByProductIdAndSize(product.id, request.size)
+            ?: throw IllegalArgumentException("Product size '${request.size}' not found")
 
         if (productSize.stockQuantity < request.quantity) {
             throw IllegalArgumentException("Not enough stock available")
@@ -145,7 +137,7 @@ class CartService(
     suspend fun removeCartItemByProductPublicId(
         userPublicId: String,
         productPublicId: String,
-        sizeId: Long
+        sizeName: String
     ): CartResponse {
         val user = userRepository.findByPublicId(UUID.fromString(userPublicId))
             ?: throw IllegalArgumentException("User not found")
@@ -155,8 +147,8 @@ class CartService(
 
         val cart = cartRepository.findOrCreateCart(user.id)
 
-        val cartItem = cartRepository.findCartItemByProductIdAndSizeId(cart.id, product.id, sizeId)
-            ?: throw IllegalArgumentException("Product with specified size not found in cart")
+        val cartItem = cartRepository.findCartItemByProductIdAndSize(cart.id, product.id, sizeName)
+            ?: throw IllegalArgumentException("Product with size '$sizeName' not found in cart")
 
         val deleted = cartRepository.removeCartItem(cartItem.id, cart.id)
 

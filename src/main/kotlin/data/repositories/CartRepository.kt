@@ -157,6 +157,19 @@ class CartRepository {
             .singleOrNull()
     }
 
+    suspend fun findCartItemByProductIdAndSize(cartId: Long, productId: Long, sizeName: String): CartItem? = dbQuery {
+        (CartItems innerJoin ProductSizes)
+            .selectAll()
+            .where {
+                (CartItems.cartId eq cartId) and
+                        (CartItems.productId eq productId) and
+                        (ProductSizes.size eq sizeName) and
+                        (CartItems.productSizeId eq ProductSizes.id)
+            }
+            .map { rowToCartItem(it) }
+            .singleOrNull()
+    }
+
     suspend fun findCartItemByProductIdAndSizeId(cartId: Long, productId: Long, sizeId: Long): CartItem? = dbQuery {
         CartItems.selectAll()
             .where {

@@ -80,6 +80,13 @@ class ProductRepository {
             .count()
     }
 
+    suspend fun findProductSizeByProductIdAndSize(productId: Long, sizeName: String): ProductSize? = dbQuery {
+        ProductSizes.selectAll()
+            .where { (ProductSizes.productId eq productId) and (ProductSizes.size eq sizeName) }
+            .map { rowToProductSize(it) }
+            .singleOrNull()
+    }
+
     suspend fun searchProducts(
         query: String?,
         categoryIds: List<Long>?,

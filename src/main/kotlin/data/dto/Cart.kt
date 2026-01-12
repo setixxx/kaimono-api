@@ -7,25 +7,15 @@ import kotlinx.serialization.Serializable
 data class AddToCartRequest(
     @SerialName("product_public_id")
     val productPublicId: String,
-
-    @SerialName("size_id")
-    val sizeId: Long,
-
+    val size: String,
     val quantity: Int = 1
 )
 
 @Serializable
 data class UpdateCartItemRequest(
-    @SerialName("size_id")
-    val sizeId: Long,
+    val size: String,
 
     val quantity: Int
-)
-
-@Serializable
-data class RemoveFromCartRequest(
-    @SerialName("size_id")
-    val sizeId: Long
 )
 
 @Serializable

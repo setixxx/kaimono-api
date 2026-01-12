@@ -9,7 +9,6 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import org.koin.ktor.ext.inject
 import setixx.software.data.dto.AddToCartRequest
-import setixx.software.data.dto.RemoveFromCartRequest
 import setixx.software.data.dto.UpdateCartItemRequest
 import setixx.software.services.CartService
 
@@ -109,17 +108,16 @@ fun Route.cartRoutes() {
                 return@delete
             }
 
-            val request = try {
-                call.receive<RemoveFromCartRequest>()
-            } catch (e: Exception) {
-                call.respond(HttpStatusCode.BadRequest, "Invalid request body")
+            val size = call.request.queryParameters["size"]
+            if (size.isNullOrBlank()) {
+                call.respond(HttpStatusCode.BadRequest, "Size parameter is required")
                 return@delete
             }
 
             try {
                 val publicId = call.getPublicIdFromAccessToken() ?: return@delete
 
-                val cart = cartService.removeCartItemByProductPublicId(publicId, productPublicId, request.sizeId)
+                val cart = cartService.removeCartItemByProductPublicId(publicId, productPublicId, size)
                 call.respond(HttpStatusCode.OK, cart)
             } catch (e: IllegalArgumentException) {
                 call.respond(HttpStatusCode.BadRequest, e.message ?: "Invalid data")
