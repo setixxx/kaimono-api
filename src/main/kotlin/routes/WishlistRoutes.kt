@@ -73,17 +73,17 @@ fun Route.wishlistRoutes() {
             }
         }
 
-        delete("/{id}") {
-            val wishlistItemId = call.parameters["id"]?.toLongOrNull()
-            if (wishlistItemId == null) {
-                call.respond(HttpStatusCode.BadRequest, "Invalid wishlist item ID")
+        delete("/{publicId}") {
+            val productPublicId = call.parameters["publicId"]
+            if (productPublicId.isNullOrBlank()) {
+                call.respond(HttpStatusCode.BadRequest, "Invalid product public ID")
                 return@delete
             }
 
             try {
                 val publicId = call.getPublicIdFromAccessToken() ?: return@delete
 
-                val wishlist = wishlistService.removeFromWishlist(publicId, wishlistItemId)
+                val wishlist = wishlistService.removeFromWishlist(publicId, productPublicId)
                 call.respond(HttpStatusCode.OK, wishlist)
             } catch (e: IllegalArgumentException) {
                 call.respond(HttpStatusCode.BadRequest, e.message ?: "Invalid data")

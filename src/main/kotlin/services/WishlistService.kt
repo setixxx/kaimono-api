@@ -73,15 +73,18 @@ class WishlistService(
 
     suspend fun removeFromWishlist(
         userPublicId: String,
-        wishlistItemId: Long
+        productPublicId: String
     ): WishlistResponse {
         val user = userRepository.findByPublicId(UUID.fromString(userPublicId))
             ?: throw IllegalArgumentException("User not found")
 
-        val deleted = wishlistRepository.removeFromWishlist(wishlistItemId, user.id)
+        val product = productRepository.findProductByPublicId(UUID.fromString(productPublicId))
+            ?: throw IllegalArgumentException("Product not found")
+
+        val deleted = wishlistRepository.removeFromWishlistByProductPublicId(user.id, product.publicId)
 
         if (deleted == 0) {
-            throw IllegalArgumentException("Wishlist item not found or already removed")
+            throw IllegalArgumentException("Product not found in wishlist")
         }
 
         return getWishlist(userPublicId)

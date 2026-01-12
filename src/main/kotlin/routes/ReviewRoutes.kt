@@ -74,9 +74,9 @@ fun Route.reviewRoutes() {
             }
         }
 
-        patch("/{id}") {
-            val reviewId = call.parameters["id"]?.toLongOrNull()
-            if (reviewId == null) {
+        patch("/{publicId}") {
+            val reviewPublicId = call.parameters["publicId"]
+            if (reviewPublicId.isNullOrBlank()) {
                 call.respond(HttpStatusCode.BadRequest, "Invalid review ID")
                 return@patch
             }
@@ -91,7 +91,7 @@ fun Route.reviewRoutes() {
             try {
                 val publicId = call.getPublicIdFromAccessToken() ?: return@patch
 
-                val review = reviewService.updateReview(publicId, reviewId, request)
+                val review = reviewService.updateReview(publicId, reviewPublicId, request)
                 call.respond(HttpStatusCode.OK, review)
             } catch (e: IllegalArgumentException) {
                 call.respond(HttpStatusCode.BadRequest, e.message ?: "Invalid data")
@@ -101,9 +101,9 @@ fun Route.reviewRoutes() {
             }
         }
 
-        delete("/{id}") {
-            val reviewId = call.parameters["id"]?.toLongOrNull()
-            if (reviewId == null) {
+        delete("/{publicId}") {
+            val reviewPublicId = call.parameters["publicId"]
+            if (reviewPublicId.isNullOrBlank()) {
                 call.respond(HttpStatusCode.BadRequest, "Invalid review ID")
                 return@delete
             }
@@ -111,7 +111,7 @@ fun Route.reviewRoutes() {
             try {
                 val publicId = call.getPublicIdFromAccessToken() ?: return@delete
 
-                reviewService.deleteReview(publicId, reviewId)
+                reviewService.deleteReview(publicId, reviewPublicId)
                 call.respond(HttpStatusCode.OK, mapOf("message" to "Review deleted successfully"))
             } catch (e: IllegalArgumentException) {
                 call.respond(HttpStatusCode.BadRequest, e.message ?: "Invalid data")

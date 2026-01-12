@@ -6,6 +6,7 @@ import setixx.software.data.tables.Reviews
 import setixx.software.models.Review
 import setixx.software.utils.dbQuery
 import java.time.Instant
+import java.util.UUID
 
 class ReviewRepository {
 
@@ -17,8 +18,10 @@ class ReviewRepository {
         comment: String?
     ): Review = dbQuery {
         val now = Instant.now()
+        val publicId = UUID.randomUUID()
 
         val insertStatement = Reviews.insert {
+            it[Reviews.publicId] = publicId
             it[Reviews.userId] = userId
             it[Reviews.productId] = productId
             it[Reviews.orderId] = orderId
@@ -30,6 +33,7 @@ class ReviewRepository {
 
         Review(
             id = insertStatement[Reviews.id],
+            publicId = publicId,
             userId = userId,
             productId = productId,
             orderId = orderId,
@@ -54,35 +58,36 @@ class ReviewRepository {
             .map { rowToReview(it) }
     }
 
-    suspend fun findReviewById(id: Long): Review? = dbQuery {
+    suspend fun findReviewByPublicId(publicId: UUID): Review? = dbQuery {
         Reviews.selectAll()
-            .where { Reviews.id eq id }
+            .where { Reviews.publicId eq publicId }
             .map { rowToReview(it) }
             .singleOrNull()
     }
 
     suspend fun updateReview(
-        id: Long,
+        publicId: UUID,
         userId: Long,
         rating: Short?,
         comment: String?
     ): Int = dbQuery {
         val now = Instant.now()
 
-        Reviews.update({ (Reviews.id eq id) and (Reviews.userId eq userId) }) {
+        Reviews.update({ (Reviews.publicId eq publicId) and (Reviews.userId eq userId) }) {
             rating?.let { value -> it[Reviews.rating] = value }
             comment?.let { value -> it[Reviews.comment] = value }
             it[Reviews.updatedAt] = now
         }
     }
 
-    suspend fun deleteReview(id: Long, userId: Long): Int = dbQuery {
-        Reviews.deleteWhere { (Reviews.id eq id) and (Reviews.userId eq userId) }
+    suspend fun deleteReview(publicId: UUID, userId: Long): Int = dbQuery {
+        Reviews.deleteWhere { (Reviews.publicId eq publicId) and (Reviews.userId eq userId) }
     }
 
     private fun rowToReview(row: ResultRow): Review {
         return Review(
             id = row[Reviews.id],
+            publicId = row[Reviews.publicId],
             userId = row[Reviews.userId],
             productId = row[Reviews.productId],
             orderId = row[Reviews.orderId],

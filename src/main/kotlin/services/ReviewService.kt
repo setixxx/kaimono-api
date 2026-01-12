@@ -51,10 +51,12 @@ class ReviewService(
 
         ReviewResponse(
             id = review.id,
+            publicId = review.publicId.toString(),
             userName = user.name,
             rating = review.rating,
             comment = review.comment,
-            createdAt = review.createdAt.toString()
+            createdAt = review.createdAt.toString(),
+            productPublicId = product.publicId.toString()
         )
     }
 
@@ -70,6 +72,7 @@ class ReviewService(
 
             ReviewResponse(
                 id = review.id,
+                publicId = review.publicId.toString(),
                 userName = reviewUser.name,
                 rating = review.rating,
                 comment = review.comment,
@@ -92,6 +95,7 @@ class ReviewService(
 
             ReviewResponse(
                 id = review.id,
+                publicId = review.publicId.toString(),
                 userName = user.name,
                 rating = review.rating,
                 comment = review.comment,
@@ -105,13 +109,13 @@ class ReviewService(
 
     suspend fun updateReview(
         userPublicId: String,
-        reviewId: Long,
+        reviewPublicId: String,
         request: UpdateReviewRequest
     ): ReviewResponse {
         val user = userRepository.findByPublicId(UUID.fromString(userPublicId))
             ?: throw IllegalArgumentException("User not found")
 
-        val existingReview = reviewRepository.findReviewById(reviewId)
+        val existingReview = reviewRepository.findReviewByPublicId(UUID.fromString(reviewPublicId))
             ?: throw IllegalArgumentException("Review not found")
 
         if (existingReview.userId != user.id) {
@@ -125,7 +129,7 @@ class ReviewService(
         }
 
         val updated = reviewRepository.updateReview(
-            id = reviewId,
+            publicId = UUID.fromString(reviewPublicId),
             userId = user.id,
             rating = request.rating,
             comment = request.comment
@@ -135,26 +139,31 @@ class ReviewService(
             throw IllegalArgumentException("Failed to update review")
         }
 
-        val updatedReview = reviewRepository.findReviewById(reviewId)
+        val updatedReview = reviewRepository.findReviewByPublicId(UUID.fromString(reviewPublicId))
             ?: throw IllegalArgumentException("Review not found after update")
+
+        val product = productRepository.findProductById(updatedReview.productId)
+            ?: throw IllegalArgumentException("Product not found")
 
         return ReviewResponse(
             id = updatedReview.id,
+            publicId = updatedReview.publicId.toString(),
             userName = user.name,
             rating = updatedReview.rating,
             comment = updatedReview.comment,
-            createdAt = updatedReview.createdAt.toString()
+            createdAt = updatedReview.createdAt.toString(),
+            productPublicId = product.publicId.toString()
         )
     }
 
     suspend fun deleteReview(
         userPublicId: String,
-        reviewId: Long
+        reviewPublicId: String
     ) {
         val user = userRepository.findByPublicId(UUID.fromString(userPublicId))
             ?: throw IllegalArgumentException("User not found")
 
-        val deleted = reviewRepository.deleteReview(reviewId, user.id)
+        val deleted = reviewRepository.deleteReview(UUID.fromString(reviewPublicId), user.id)
 
         if (deleted == 0) {
             throw IllegalArgumentException("Review not found or access denied")

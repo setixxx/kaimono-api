@@ -19,6 +19,9 @@ data class CreateReviewRequest(
 data class ReviewResponse(
     val id: Long,
 
+    @SerialName("public_id")
+    val publicId: String,
+
     @SerialName("user_name")
     val userName: String,
 

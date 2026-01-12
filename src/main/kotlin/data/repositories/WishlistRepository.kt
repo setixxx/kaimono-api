@@ -2,10 +2,12 @@ package setixx.software.data.repositories
 
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
+import setixx.software.data.tables.Products
 import setixx.software.data.tables.Wishlist
 import setixx.software.models.WishlistItem
 import setixx.software.utils.dbQuery
 import java.time.Instant
+import java.util.UUID
 
 class WishlistRepository {
 
@@ -55,6 +57,17 @@ class WishlistRepository {
     suspend fun removeFromWishlist(id: Long, userId: Long): Int = dbQuery {
         Wishlist.deleteWhere {
             (Wishlist.id eq id) and (Wishlist.userId eq userId)
+        }
+    }
+
+    suspend fun removeFromWishlistByProductPublicId(userId: Long, productPublicId: UUID): Int = dbQuery {
+        val productId = Products.selectAll()
+            .where { Products.publicId eq productPublicId }
+            .map { it[Products.id] }
+            .singleOrNull() ?: return@dbQuery 0
+
+        Wishlist.deleteWhere {
+            (Wishlist.userId eq userId) and (Wishlist.productId eq productId)
         }
     }
 
