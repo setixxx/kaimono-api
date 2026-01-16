@@ -39,6 +39,9 @@ data class OrderResponse(
 
 @Serializable
 data class OrderItemResponse(
+    @SerialName("product_public_id")
+    val productPublicId: String,
+
     @SerialName("product_name")
     val productName: String,
 

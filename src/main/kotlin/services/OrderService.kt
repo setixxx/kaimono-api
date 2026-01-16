@@ -185,6 +185,7 @@ class OrderService(
                 ?: throw IllegalArgumentException("Product size not found")
 
             OrderItemResponse(
+                productPublicId = product.publicId.toString(),
                 productName = product.name,
                 size = productSize.size,
                 quantity = item.quantity,
