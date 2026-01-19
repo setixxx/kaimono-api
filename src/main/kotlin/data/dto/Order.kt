@@ -94,10 +94,3 @@ data class PaymentMethodInfoResponse(
     @SerialName("card_holder_name")
     val cardHolderName: String
 )
-
-@Serializable
-data class OrderStatusResponse(
-    val code: String,
-    val name: String,
-    val description: String?
-)

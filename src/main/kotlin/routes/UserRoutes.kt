@@ -1,23 +1,19 @@
 package setixx.software.routes
 
-import com.auth0.jwt.JWT
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.ApplicationCall
 import io.ktor.server.auth.jwt.JWTPrincipal
 import io.ktor.server.auth.principal
 import io.ktor.server.request.receive
 import io.ktor.server.response.respond
-import io.ktor.server.response.respondText
 import io.ktor.server.routing.Route
 import io.ktor.server.routing.get
-import io.ktor.server.routing.patch
 import io.ktor.server.routing.post
 import io.ktor.server.routing.route
 import org.koin.ktor.ext.inject
 import setixx.software.data.dto.UpdatePasswordRequest
 import setixx.software.data.dto.UpdatePasswordResponse
 import setixx.software.data.dto.UpdateUserInfoRequest
-import setixx.software.data.dto.UpdateUserInfoResponse
 import setixx.software.services.UserService
 
 private suspend fun ApplicationCall.getPublicIdFromAccessToken(): String? {

@@ -49,19 +49,6 @@ class PaymentRepository {
             .singleOrNull()
     }
 
-    suspend fun updatePaymentStatus(
-        orderId: Long,
-        status: String,
-        paidAt: Instant?
-    ): Int = dbQuery {
-        Payments.update({ Payments.orderId eq orderId }) {
-            it[Payments.status] = status
-            if (paidAt != null) {
-                it[Payments.paidAt] = paidAt
-            }
-        }
-    }
-
     private fun rowToPayment(row: ResultRow): Payment {
         return Payment(
             id = row[Payments.id],

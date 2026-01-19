@@ -47,19 +47,6 @@ class WishlistRepository {
             .map { rowToWishlistItem(it) }
     }
 
-    suspend fun findWishlistItemById(id: Long, userId: Long): WishlistItem? = dbQuery {
-        Wishlist.selectAll()
-            .where { (Wishlist.id eq id) and (Wishlist.userId eq userId) }
-            .map { rowToWishlistItem(it) }
-            .singleOrNull()
-    }
-
-    suspend fun removeFromWishlist(id: Long, userId: Long): Int = dbQuery {
-        Wishlist.deleteWhere {
-            (Wishlist.id eq id) and (Wishlist.userId eq userId)
-        }
-    }
-
     suspend fun removeFromWishlistByProductPublicId(userId: Long, productPublicId: UUID): Int = dbQuery {
         val productId = Products.selectAll()
             .where { Products.publicId eq productPublicId }

@@ -101,23 +101,3 @@ data class ProductSizeInfo(
     @SerialName("final_price")
     val finalPrice: String
 )
-
-@Serializable
-data class NotificationResponse(
-    val id: Long,
-    val type: String,
-    val title: String,
-    val message: String,
-
-    @SerialName("is_read")
-    val isRead: Boolean,
-
-    @SerialName("created_at")
-    val createdAt: String
-)
-
-@Serializable
-data class MarkNotificationReadRequest(
-    @SerialName("notification_ids")
-    val notificationIds: List<Long>
-)

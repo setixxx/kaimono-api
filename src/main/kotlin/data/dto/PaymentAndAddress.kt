@@ -82,29 +82,3 @@ data class PaymentMethodResponse(
     @SerialName("is_default")
     val isDefault: Boolean
 )
-
-@Serializable
-data class ProcessPaymentRequest(
-    @SerialName("order_id")
-    val orderId: String,
-
-    @SerialName("payment_method_id")
-    val paymentMethodId: Long? = null
-)
-
-@Serializable
-data class PaymentResponse(
-    val id: Long,
-
-    @SerialName("order_id")
-    val orderId: Long,
-
-    val amount: String,
-    val status: String,
-
-    @SerialName("transaction_id")
-    val transactionId: String?,
-
-    @SerialName("paid_at")
-    val paidAt: String?
-)

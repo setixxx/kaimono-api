@@ -2,7 +2,6 @@ package setixx.software.data.dto
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import java.time.LocalDate
 
 @Serializable
 data class UpdatePasswordRequest(
@@ -27,12 +26,6 @@ data class UpdateUserInfoRequest(
     @SerialName("birth_date")
     val birthDate: String? = null,
     val gender: String? = null,
-)
-
-@Serializable
-data class UpdateUserInfoResponse(
-    @SerialName("user_update_status")
-    val userUpdateStatus: String
 )
 
 @Serializable

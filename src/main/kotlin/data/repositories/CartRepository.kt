@@ -143,20 +143,6 @@ class CartRepository {
         deleted
     }
 
-    suspend fun findCartItemById(cartItemId: Long, cartId: Long): CartItem? = dbQuery {
-        CartItems.selectAll()
-            .where { (CartItems.id eq cartItemId) and (CartItems.cartId eq cartId) }
-            .map { rowToCartItem(it) }
-            .singleOrNull()
-    }
-
-    suspend fun findCartItemByProductId(cartId: Long, productId: Long): CartItem? = dbQuery {
-        CartItems.selectAll()
-            .where { (CartItems.cartId eq cartId) and (CartItems.productId eq productId) }
-            .map { rowToCartItem(it) }
-            .singleOrNull()
-    }
-
     suspend fun findCartItemByProductIdAndSize(cartId: Long, productId: Long, sizeName: String): CartItem? = dbQuery {
         (CartItems innerJoin ProductSizes)
             .selectAll()
@@ -165,17 +151,6 @@ class CartRepository {
                         (CartItems.productId eq productId) and
                         (ProductSizes.size eq sizeName) and
                         (CartItems.productSizeId eq ProductSizes.id)
-            }
-            .map { rowToCartItem(it) }
-            .singleOrNull()
-    }
-
-    suspend fun findCartItemByProductIdAndSizeId(cartId: Long, productId: Long, sizeId: Long): CartItem? = dbQuery {
-        CartItems.selectAll()
-            .where {
-                (CartItems.cartId eq cartId) and
-                        (CartItems.productId eq productId) and
-                        (CartItems.productSizeId eq sizeId)
             }
             .map { rowToCartItem(it) }
             .singleOrNull()
